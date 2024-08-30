@@ -26,8 +26,16 @@
     "node": "20"
   },
   "dependencies": {
-    "dayjs": "^1.11.7",
-    "flatpickr": "^4.6.13",
-    "he": "^1.2.0"
-  }
+    "dayjs": "1.11.7",
+    "flatpickr": "4.6.13",
+    "he": "1.2.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "not dead",
+    "Chrome >= 60",
+    "Firefox >= 60",
+    "Safari >= 10",
+    "Edge >= 16"
+  ]
 }
