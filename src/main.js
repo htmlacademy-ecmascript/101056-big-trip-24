@@ -1,4 +1,7 @@
-import {render} from './framework/render.js';
+import { render } from './framework/render.js';
+// import EventsModel from './model/events-model.js';
+// import { getRandomDestinations } from './mock/destinations.js';
+// import { getRandomOffers } from './mock/offers.js';
 
 import NewTripInfoView from './view/new-trip-info-view.js';
 import NewTripFiltersView from './view/new-filters-view.js';
@@ -17,3 +20,6 @@ render (new NewTripFiltersView(), tripFiltersContainer);
 // render (new NewEventsMessageView(), tripEventsContainer);
 
 boardPresenter.init();
+// console.log(new EventsModel());
+// console.log(getRandomDestinations(2));
+// console.log(getRandomOffers('taxi', 4));
