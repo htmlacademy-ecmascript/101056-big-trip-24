@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import {createElement} from '../framework/render.js';
 
 function createNewTripSortTemplate() {
   return `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">

@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import {createElement} from '../framework/render.js';
 
 function createNewEventsMessageTemplate() {
   return '<p class="trip-events__msg">Loading...</p>';

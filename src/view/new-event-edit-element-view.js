@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import {createElement} from '../framework/render';
 
 function createNewEventEditElementTemplate() {
   return `<li class="trip-events__item">
