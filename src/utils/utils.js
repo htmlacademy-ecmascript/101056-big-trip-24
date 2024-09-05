@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 const ESCAPE_KEY_CODE = 27;
 
 const isEscapeKey = (evt) => evt.keyCode === ESCAPE_KEY_CODE;
@@ -32,11 +34,30 @@ const getRandomDate = () => {
   return new Date(randomTime);
 };
 
+const humanizeDueDate = (dueDate, dateFormat) => dueDate ? dayjs(dueDate).format(dateFormat) : '';
+
+const convertToCamelCase = (str) => str.replace(/(_\w)/g, (match) => match[1].toUpperCase());
+
+const convertKeysToCamelCase = (items) => {
+  if (Array.isArray(items)) {
+    return items.map(convertKeysToCamelCase);
+  }
+  if (items !== null && typeof items === 'object') {
+    return Object.entries(items).reduce((newItems, [key, value]) => {
+      newItems[convertToCamelCase(key)] = convertKeysToCamelCase(value);
+      return newItems;
+    }, {});
+  }
+  return items;
+};
+
 export {
   getRandomNumber,
   getRandomString,
   getRandomBoolean,
   getRandomDate,
   getRandomArrayElement,
+  humanizeDueDate,
+  convertKeysToCamelCase,
   isEscapeKey
 };

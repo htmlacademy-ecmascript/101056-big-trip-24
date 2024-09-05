@@ -1,7 +1,5 @@
-import { getRandomArrayElement, getRandomString, getRandomNumber} from '../utils/utils';
-import { getSentences } from '../const';
-
-const SENTENCES = getSentences();
+import { getRandomArrayElement, getRandomNumber} from '../utils/utils';
+import { SENTENCES, CITIES } from '../const';
 
 const getRandomDescription = () => {
   let randomDescription = '';
@@ -13,9 +11,9 @@ const getRandomDescription = () => {
 
 const getRandomDestination = (id) => {
   const destination = {
-    'id': `${id }fe416cq-10xa-ye10-8077-2fs9a01edcab`,
+    'id': `${id }fa5cb75-a1fe-4b77-a83c-0e528e910e04`,
     'description': getRandomDescription(),
-    'name': getRandomString(10),
+    'name': CITIES[id],
     'pictures': [
       {
         'src': `https://loremflickr.com/248/152?random=${ getRandomNumber(1,100)}`,
@@ -26,9 +24,9 @@ const getRandomDestination = (id) => {
   return destination;
 };
 
-const getRandomDestinations = (count) => {
+const getRandomDestinations = () => {
   const destinations = [];
-  for (let i = 0; i < count; i ++) {
+  for (let i = 0; i < CITIES.length; i ++) {
     destinations.push(getRandomDestination(i));
   }
   return destinations;

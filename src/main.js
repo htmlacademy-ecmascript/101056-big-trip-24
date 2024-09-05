@@ -20,3 +20,4 @@ render (new NewTripFiltersView(), tripFiltersContainer);
 
 
 boardPresenter.init();
+
