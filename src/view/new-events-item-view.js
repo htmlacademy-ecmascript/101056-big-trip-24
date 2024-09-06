@@ -2,9 +2,6 @@ import dayjs from 'dayjs';
 import { createElement } from '../framework/render';
 import { humanizeDueDate } from '../utils/utils';
 
-const HOUR_IN_MILLISECONDS = 1000 * 60 * 60;
-const DAY_IN_MILLISECONDS = HOUR_IN_MILLISECONDS * 24;
-
 const TIME_PATTERN = 'hh:mm';
 const HUMANIZED_EVENT_DATE_PATTERN = 'MMM DD';
 
@@ -13,21 +10,16 @@ const getTimeDifference = (timeStart, timeEnd) => {
   const start = dayjs(timeStart);
   const end = dayjs(timeEnd);
 
-  const differenceInMilliseconds = end.diff(start);
-  let differenceInMinutes = '';
-  if (differenceInMilliseconds < HOUR_IN_MILLISECONDS) {
-    differenceInMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-    return `${String(differenceInMinutes).padStart(2, '0')}M`;
-  }
+  const differenceInDays = end.diff(start, 'day');
+  const differenceInHours = end.diff(start, 'hour') % 24;
+  const differenceInMinutes = end.diff(start, 'minute') % 60;
 
-  const differenceInDays = Math.floor(differenceInMilliseconds / DAY_IN_MILLISECONDS);
-  const differenceInHours = Math.floor((differenceInMilliseconds % DAY_IN_MILLISECONDS) / HOUR_IN_MILLISECONDS);
-  differenceInMinutes = Math.floor((differenceInMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
-
-  if (differenceInMilliseconds >= DAY_IN_MILLISECONDS) {
+  if (differenceInDays > 0) {
     return `${String(differenceInDays).padStart(2, '0')}D ${String(differenceInHours).padStart(2, '0')}H ${String(differenceInMinutes).padStart(2, '0')}M`;
-  } else {
+  } else if (differenceInHours > 0) {
     return `${String(differenceInHours).padStart(2, '0')}H ${String(differenceInMinutes).padStart(2, '0')}M`;
+  } else {
+    return `${String(differenceInMinutes).padStart(2, '0')}M`;
   }
 };
 
