@@ -1,12 +1,13 @@
 import dayjs from 'dayjs';
-import {createElement} from '../framework/render';
+import { createElement } from '../framework/render';
 import { humanizeDueDate } from '../utils/utils';
 
 const HOUR_IN_MILLISECONDS = 1000 * 60 * 60;
 const DAY_IN_MILLISECONDS = HOUR_IN_MILLISECONDS * 24;
+
 const TIME_PATTERN = 'hh:mm';
-const DATE_PATTERN = 'YYYY-MM-DD';
 const HUMANIZED_EVENT_DATE_PATTERN = 'MMM DD';
+
 
 const getTimeDifference = (timeStart, timeEnd) => {
   const start = dayjs(timeStart);
@@ -47,19 +48,18 @@ function createOffers (offers) {
   return offersHTML;
 }
 
-function createNewTripEventsItemTemplate(event, offers, inputDestination) {
-  const {basePrice, dateFrom, dateTo, isFavorite, type} = event;
+function createNewTripEventsItemTemplate(eventsList, offersList, inputDestination) {
+  const {basePrice, dateFrom, dateTo, isFavorite, type} = eventsList;
   const favoriteButtonClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
   const humanizedEventDate = humanizeDueDate(dateFrom, HUMANIZED_EVENT_DATE_PATTERN);
-  const eventDate = humanizeDueDate(dateFrom, DATE_PATTERN);
 
   const humanizedStartTime = humanizeDueDate(dateFrom, TIME_PATTERN);
   const humanizedEndTime = humanizeDueDate(dateTo, TIME_PATTERN);
 
   return `<li class="trip-events__item">
               <div class="event">
-                <time class="event__date" datetime="${eventDate}">${humanizedEventDate}</time>
+                <time class="event__date" datetime="${dateFrom}">${humanizedEventDate}</time>
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
@@ -77,7 +77,7 @@ function createNewTripEventsItemTemplate(event, offers, inputDestination) {
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
-                ${createOffers(offers)}
+                ${createOffers(offersList)}
                 </ul>
                 <button class="event__favorite-btn ${favoriteButtonClassName}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
@@ -93,14 +93,14 @@ function createNewTripEventsItemTemplate(event, offers, inputDestination) {
 }
 
 export default class NewEventsItemView {
-  constructor ({event, offers, destination}) {
-    this.event = event;
-    this.offers = offers;
+  constructor ({eventsList, offersList, destination}) {
+    this.eventsList = eventsList;
+    this.offersList = offersList;
     this.destination = destination;
   }
 
   getTemplate () {
-    return createNewTripEventsItemTemplate(this.event, this.offers, this.destination);
+    return createNewTripEventsItemTemplate(this.eventsList, this.offersList, this.destination);
   }
 
   getElement () {

@@ -23,8 +23,8 @@ function createOffers (offers) {
   return offersHTML;
 }
 
-function createNewEventEditElementTemplate(event, offers, inputDestination) {
-  const {basePrice, dateFrom, dateTo, type} = event;
+function createNewEventEditElementTemplate(eventsList, offersList, inputDestination) {
+  const {basePrice, dateFrom, dateTo, type} = eventsList;
   const dateStart = humanizeDueDate(dateFrom, TIME_PATTERN);
   const dateEnd = humanizeDueDate(dateTo, TIME_PATTERN);
   return `<li class="trip-events__item">
@@ -128,7 +128,7 @@ function createNewEventEditElementTemplate(event, offers, inputDestination) {
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
                     <div class="event__available-offers">
-                    ${createOffers(offers)}
+                    ${createOffers(offersList)}
                     </div>
                   </section>
 
@@ -143,14 +143,14 @@ function createNewEventEditElementTemplate(event, offers, inputDestination) {
 
 export default class NewEventEditElementView {
 
-  constructor ({event, offers, destination}) {
-    this.event = event;
-    this.offers = offers;
+  constructor ({eventsList, offersList, destination}) {
+    this.eventsList = eventsList;
+    this.offersList = offersList;
     this.destination = destination;
   }
 
   getTemplate () {
-    return createNewEventEditElementTemplate(this.event, this.offers, this.destination);
+    return createNewEventEditElementTemplate(this.eventsList, this.offersList, this.destination);
   }
 
   getElement () {

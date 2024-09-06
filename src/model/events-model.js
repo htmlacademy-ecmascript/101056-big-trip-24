@@ -8,10 +8,10 @@ const EVENTS_COUNT = 3;
 export default class EventsModel {
   offersList = convertKeysToCamelCase(getRandomOffers());
   destinationsList = convertKeysToCamelCase(getRandomDestinations());
-  events = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.destinationsList));
+  eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.destinationsList));
 
-  getEvents () {
-    return this.events;
+  getUserEvents () {
+    return this.eventsList;
   }
 
   getDestination (id) {

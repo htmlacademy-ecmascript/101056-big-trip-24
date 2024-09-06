@@ -6,6 +6,8 @@ import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
 // import NewEventAddElementView from '../view/new-event-add-element-view.js';
 
+const EDIT_ELEMENT_ID = 0;
+
 
 export default class BoardPresenter {
   sortComponent = new NewTripSortView();
@@ -17,24 +19,24 @@ export default class BoardPresenter {
   }
 
   init () {
-    this.events = [...this.eventsModel.getEvents()];
+    this.eventsList = [...this.eventsModel.getUserEvents()];
 
     render(this.sortComponent, this.container);
     render(this.eventsListComponent, this.container);
     // render(new NewEventAddElementView(), this.eventsListComponent.getElement(), 'AFTERBEGIN');
 
     render(new NewEventEditElementView({
-      event: this.events[0],
-      offers: this.eventsModel.getOffersByIds(this.events[0].offers),
-      destination: this.eventsModel.getDestination(this.events[0].destination)
+      eventsList: this.eventsList[EDIT_ELEMENT_ID],
+      offersList: this.eventsModel.getOffersByIds(this.eventsList[EDIT_ELEMENT_ID].offers),
+      destination: this.eventsModel.getDestination(this.eventsList[EDIT_ELEMENT_ID].destination)
     }),
     this.eventsListComponent.getElement());
 
-    for (let i = 0; i < this.events.length; i ++) {
+    for (let i = 0; i < this.eventsList.length; i ++) {
       render(new NewEventsItemView({
-        event: this.events[i],
-        offers: this.eventsModel.getOffersByIds(this.events[i].offers),
-        destination: this.eventsModel.getDestination(this.events[i].destination)
+        eventsList: this.eventsList[i],
+        offersList: this.eventsModel.getOffersByIds(this.eventsList[i].offers),
+        destination: this.eventsModel.getDestination(this.eventsList[i].destination)
       }),
       this.eventsListComponent.getElement());
     }
