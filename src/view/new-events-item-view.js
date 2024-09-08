@@ -23,24 +23,24 @@ const getTimeDifference = (timeStart, timeEnd) => {
   }
 };
 
-function createNewOffer (offer) {
+const createNewOffer = (offer) => {
   const {title, price} = offer;
   return `<li class="event__offer">
                     <span class="event__offer-title">${title}</span>
                     &plus;&euro;&nbsp;
                     <span class="event__offer-price">${price}</span>
                   </li>`;
-}
+};
 
-function createOffers (offers) {
+const createOffers = (offers) => {
   let offersHTML = '';
   offers.forEach((offer) => {
     offersHTML += createNewOffer(offer);
   });
   return offersHTML;
-}
+};
 
-function createNewTripEventsItemTemplate(eventsList) {
+const createNewTripEventsItemTemplate = (eventsList) => {
   const {basePrice, dateFrom, dateTo, isFavorite, type, offers, destination} = eventsList;
   const favoriteButtonClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
@@ -82,15 +82,16 @@ function createNewTripEventsItemTemplate(eventsList) {
                 </button>
               </div>
             </li>`;
-}
+};
 
 export default class NewEventsItemView extends AbstractView {
+  #eventsList = null;
   constructor ({eventsList}) {
     super();
-    this.eventsList = eventsList;
+    this.#eventsList = eventsList;
   }
 
   get template () {
-    return createNewTripEventsItemTemplate(this.eventsList, this.offersList, this.destination);
+    return createNewTripEventsItemTemplate(this.#eventsList);
   }
 }

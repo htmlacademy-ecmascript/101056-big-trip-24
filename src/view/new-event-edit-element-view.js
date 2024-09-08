@@ -3,7 +3,7 @@ import { humanizeDueDate } from '../utils/utils';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
-function createNewOffer (offer) {
+const createNewOffer = (offer) => {
   const {title, price} = offer;
   return `<div class="event__offer-selector">
                         <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
@@ -13,17 +13,17 @@ function createNewOffer (offer) {
                           <span class="event__offer-price">${price}</span>
                         </label>
                       </div>`;
-}
+};
 
-function createOffers (offers) {
+const createOffers = (offers) => {
   let offersHTML = '';
   offers.forEach((offer) => {
     offersHTML += createNewOffer(offer);
   });
   return offersHTML;
-}
+};
 
-function createNewEventEditElementTemplate(eventsList) {
+const createNewEventEditElementTemplate = (eventsList) => {
   const {basePrice, dateFrom, dateTo, type, offers, destination} = eventsList;
   const dateStart = humanizeDueDate(dateFrom, TIME_PATTERN);
   const dateEnd = humanizeDueDate(dateTo, TIME_PATTERN);
@@ -139,16 +139,16 @@ function createNewEventEditElementTemplate(eventsList) {
                 </section>
               </form>
             </li>`;
-}
+};
 
 export default class NewEventEditElementView extends AbstractView {
-
+  #eventsList = null;
   constructor ({eventsList}) {
     super();
-    this.eventsList = eventsList;
+    this.#eventsList = eventsList;
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this.eventsList, this.offersList, this.destination);
+    return createNewEventEditElementTemplate(this.#eventsList);
   }
 }
