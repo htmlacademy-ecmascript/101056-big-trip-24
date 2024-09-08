@@ -23,8 +23,8 @@ const createOffers = (offers) => {
   return offersHTML;
 };
 
-const createNewEventEditElementTemplate = (eventsList) => {
-  const {basePrice, dateFrom, dateTo, type, offers, destination} = eventsList;
+const createNewEventEditElementTemplate = (eventData) => {
+  const {basePrice, dateFrom, dateTo, type, offers, destination} = eventData;
   const dateStart = humanizeDueDate(dateFrom, TIME_PATTERN);
   const dateEnd = humanizeDueDate(dateTo, TIME_PATTERN);
   return `<li class="trip-events__item">
@@ -142,13 +142,13 @@ const createNewEventEditElementTemplate = (eventsList) => {
 };
 
 export default class NewEventEditElementView extends AbstractView {
-  #eventsList = null;
-  constructor ({eventsList}) {
+  #eventData = null;
+  constructor ({userEvent}) {
     super();
-    this.#eventsList = eventsList;
+    this.#eventData = userEvent;
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this.#eventsList);
+    return createNewEventEditElementTemplate(this.#eventData);
   }
 }

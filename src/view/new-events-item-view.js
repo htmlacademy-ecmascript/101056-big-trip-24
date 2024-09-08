@@ -40,8 +40,8 @@ const createOffers = (offers) => {
   return offersHTML;
 };
 
-const createNewTripEventsItemTemplate = (eventsList) => {
-  const {basePrice, dateFrom, dateTo, isFavorite, type, offers, destination} = eventsList;
+const createNewTripEventsItemTemplate = (eventData) => {
+  const {basePrice, dateFrom, dateTo, isFavorite, type, offers, destination} = eventData;
   const favoriteButtonClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
   const humanizedEventDate = humanizeDueDate(dateFrom, HUMANIZED_EVENT_DATE_PATTERN);
@@ -85,13 +85,13 @@ const createNewTripEventsItemTemplate = (eventsList) => {
 };
 
 export default class NewEventsItemView extends AbstractView {
-  #eventsList = null;
-  constructor ({eventsList}) {
+  #eventData = null;
+  constructor ({userEvent}) {
     super();
-    this.#eventsList = eventsList;
+    this.#eventData = userEvent;
   }
 
   get template () {
-    return createNewTripEventsItemTemplate(this.#eventsList);
+    return createNewTripEventsItemTemplate(this.#eventData);
   }
 }

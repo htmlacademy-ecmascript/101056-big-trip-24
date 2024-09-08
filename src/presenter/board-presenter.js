@@ -29,16 +29,20 @@ export default class BoardPresenter {
     render(this.#eventsListComponent, this.#container);
 
     render(new NewEventEditElementView({
-      eventsList: this.#eventsList[EDIT_ELEMENT_ID]
+      userEvent: this.#eventsList[EDIT_ELEMENT_ID]
     }),
     this.#eventsListComponent.element);
 
+
     for (let i = 0; i < this.#eventsList.length; i ++) {
-      render(new NewEventsItemView({
-        eventsList: this.#eventsList[i]
-      }),
-      this.#eventsListComponent.element);
+      this.#renderEvent(this.#eventsList[i]);
     }
 
+  }
+
+  #renderEvent(inputUserEvent) {
+    const eventComponent = new NewEventsItemView({ userEvent: inputUserEvent });
+
+    render(eventComponent, this.#eventsListComponent.element);
   }
 }
