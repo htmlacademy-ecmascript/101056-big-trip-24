@@ -1,6 +1,5 @@
 import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate } from '../utils/utils';
-import { isEscapeKey } from '../utils/utils';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
@@ -159,7 +158,6 @@ export default class NewEventEditElementView extends AbstractView {
 
     this.#rollupButton = this.element.querySelector('.event__rollup-btn');
     this.#rollupButton.addEventListener('click', this.#clickHandler);
-    document.addEventListener('keydown', this.#keydownHandler);
 
     this.#formElement = this.element.querySelector('.event--edit');
     this.#formElement.addEventListener('submit', this.#submitHandler);
@@ -179,16 +177,8 @@ export default class NewEventEditElementView extends AbstractView {
     this.#handleClick();
   };
 
-  #keydownHandler = (evt) => {
-    if (isEscapeKey(evt)) {
-      evt.preventDefault();
-      this.#handleClick();
-    }
-  };
-
   removeEventListeners() {
     this.#rollupButton.removeEventListener('click', this.#clickHandler);
     this.#formElement.removeEventListener('submit', this.#submitHandler);
-    document.removeEventListener('keydown', this.#keydownHandler);
   }
 }

@@ -1,5 +1,5 @@
 import { render, replace } from '../framework/render.js';
-
+import { isEscapeKey } from '../utils/utils.js';
 import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
@@ -32,32 +32,38 @@ export default class BoardPresenter {
   }
 
   #renderEvent(inputUserEvent) {
-    const eventComponent = new NewEventsItemView({
+    const escKeyDownHandler = (evt) => {
+      if (isEscapeKey(evt)) {
+        evt.preventDefault();
+        replaceEditFormToEventCard();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    };
+
+    const eventCardComponent = new NewEventsItemView({
       userEvent: inputUserEvent,
-      onClick: () => this.#itemViewRollupButtonClick(eventComponent, inputUserEvent)
+      onClick: () => {
+        replaceEventCardToEditForm();
+        document.addEventListener('keydown', escKeyDownHandler);
+      }
     });
-    render(eventComponent, this.#eventsListComponent.element);
+
+    const editFormComponent = new NewEventEditElementView({
+      userEvent: inputUserEvent,
+      onClick: () => {
+        replaceEditFormToEventCard();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    });
+
+    function replaceEventCardToEditForm () {
+      replace(editFormComponent, eventCardComponent);
+    }
+
+    function replaceEditFormToEventCard () {
+      replace(eventCardComponent, editFormComponent);
+    }
+
+    render(eventCardComponent, this.#eventsListComponent.element);
   }
-
-  #renderEditEventComponent(inputUserEvent, eventComponent) {
-    const eventEditComponent = new NewEventEditElementView({
-      userEvent: inputUserEvent,
-      onClick: () => this.#eventEditViewRollupButtonClick(eventEditComponent, inputUserEvent)
-    });
-    eventComponent.removeEventListeners();
-    replace(eventEditComponent, eventComponent);
-  }
-
-  #itemViewRollupButtonClick = (eventComponent, inputUserEvent) => {
-    this.#renderEditEventComponent(inputUserEvent, eventComponent);
-  };
-
-  #eventEditViewRollupButtonClick = (eventEditComponent, inputUserEvent) => {
-    const eventComponent = new NewEventsItemView({
-      userEvent: inputUserEvent,
-      onClick: () => this.#itemViewRollupButtonClick(eventComponent, inputUserEvent)
-    });
-    eventEditComponent.removeEventListeners();
-    replace(eventComponent, eventEditComponent);
-  };
 }
