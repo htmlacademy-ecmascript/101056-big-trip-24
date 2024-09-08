@@ -1,5 +1,6 @@
 import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate } from '../utils/utils';
+import { isEscapeKey } from '../utils/utils';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
@@ -143,12 +144,51 @@ const createNewEventEditElementTemplate = (eventData) => {
 
 export default class NewEventEditElementView extends AbstractView {
   #eventData = null;
-  constructor ({userEvent}) {
+  #handleClick = null;
+  #rollupButton = null;
+
+  #handleSubmit = null;
+  #formElement = null;
+
+  constructor ({userEvent, onClick, onSubmit}) {
     super();
     this.#eventData = userEvent;
+
+    this.#handleClick = onClick;
+    this.#handleSubmit = onSubmit;
+
+    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
+    this.#rollupButton.addEventListener('click', this.#clickHandler);
+    document.addEventListener('keydown', this.#keydownHandler);
+
+    this.#formElement = this.element.querySelector('.event--edit');
+    this.#formElement.addEventListener('submit', this.#submitHandler);
   }
 
   get template () {
     return createNewEventEditElementTemplate(this.#eventData);
+  }
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleClick();
+  };
+
+  #submitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleClick();
+  };
+
+  #keydownHandler = (evt) => {
+    if (isEscapeKey(evt)) {
+      evt.preventDefault();
+      this.#handleClick();
+    }
+  };
+
+  removeEventListeners() {
+    this.#rollupButton.removeEventListener('click', this.#clickHandler);
+    document.removeEventListener('keydown', this.#clickHandler);
+    this.#formElement.removeEventListener('submit', this.#submitHandler);
   }
 }

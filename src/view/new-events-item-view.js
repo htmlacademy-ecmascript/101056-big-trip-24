@@ -77,21 +77,39 @@ const createNewTripEventsItemTemplate = (eventData) => {
                     <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
                   </svg>
                 </button>
+
                 <button class="event__rollup-btn" type="button">
                   <span class="visually-hidden">Open event</span>
                 </button>
+
               </div>
             </li>`;
 };
 
 export default class NewEventsItemView extends AbstractView {
   #eventData = null;
-  constructor ({userEvent}) {
+  #handleClick = null;
+  #rollupButton = null;
+
+  constructor ({userEvent, onClick}) {
     super();
     this.#eventData = userEvent;
+    this.#handleClick = onClick;
+    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
+    this.#rollupButton.addEventListener('click', this.#clickHandler);
   }
 
   get template () {
     return createNewTripEventsItemTemplate(this.#eventData);
   }
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleClick();
+  };
+
+  removeEventListeners() {
+    this.#rollupButton.removeEventListener('click', this.#clickHandler);
+  }
+
 }

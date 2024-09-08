@@ -3,7 +3,7 @@ import { getRandomOffers } from '../mock/offers';
 import { getRandomDestinations } from '../mock/destinations';
 import { convertKeysToCamelCase } from '../utils/utils';
 
-const EVENTS_COUNT = 3;
+const EVENTS_COUNT = 10;
 
 const createUserEvents = () => {
   const offersList = convertKeysToCamelCase(getRandomOffers());

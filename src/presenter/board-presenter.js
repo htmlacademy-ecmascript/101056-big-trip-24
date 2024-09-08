@@ -5,8 +5,6 @@ import NewEventsListView from '../view/new-events-list-view.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
 
-const EDIT_ELEMENT_ID = 0;
-
 
 export default class BoardPresenter {
   #container = null;
@@ -28,21 +26,38 @@ export default class BoardPresenter {
     render(this.#sortComponent, this.#container);
     render(this.#eventsListComponent, this.#container);
 
-    render(new NewEventEditElementView({
-      userEvent: this.#eventsList[EDIT_ELEMENT_ID]
-    }),
-    this.#eventsListComponent.element);
-
-
-    for (let i = 0; i < this.#eventsList.length; i ++) {
+    for (let i = 0; i < this.#eventsList.length; i++) {
       this.#renderEvent(this.#eventsList[i]);
     }
-
   }
 
   #renderEvent(inputUserEvent) {
-    const eventComponent = new NewEventsItemView({ userEvent: inputUserEvent });
-
+    const eventComponent = new NewEventsItemView({
+      userEvent: inputUserEvent,
+      onClick: () => this.#handleRollupButtonItemClick(eventComponent, inputUserEvent)
+    });
     render(eventComponent, this.#eventsListComponent.element);
   }
+
+  #renderEditEventComponent(inputUserEvent, eventComponent) {
+    const eventEditComponent = new NewEventEditElementView({
+      userEvent: inputUserEvent,
+      onClick: () => this.#handleRollupButtonEditClick(eventEditComponent, inputUserEvent)
+    });
+    eventComponent.removeEventListeners();
+    eventComponent.element.replaceWith(eventEditComponent.element);
+  }
+
+  #handleRollupButtonItemClick = (eventComponent, inputUserEvent) => {
+    this.#renderEditEventComponent(inputUserEvent, eventComponent);
+  };
+
+  #handleRollupButtonEditClick = (eventEditComponent, inputUserEvent) => {
+    const eventComponent = new NewEventsItemView({
+      userEvent: inputUserEvent,
+      onClick: () => this.#handleRollupButtonItemClick(eventComponent, inputUserEvent)
+    });
+    eventEditComponent.removeEventListeners();
+    eventEditComponent.element.replaceWith(eventComponent.element);
+  };
 }
