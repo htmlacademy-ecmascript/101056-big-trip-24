@@ -188,7 +188,7 @@ export default class NewEventEditElementView extends AbstractView {
 
   removeEventListeners() {
     this.#rollupButton.removeEventListener('click', this.#clickHandler);
-    document.removeEventListener('keydown', this.#clickHandler);
     this.#formElement.removeEventListener('submit', this.#submitHandler);
+    document.removeEventListener('keydown', this.#keydownHandler);
   }
 }
