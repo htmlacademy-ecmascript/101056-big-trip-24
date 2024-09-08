@@ -1,4 +1,4 @@
-import {render} from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 
 import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
@@ -34,7 +34,7 @@ export default class BoardPresenter {
   #renderEvent(inputUserEvent) {
     const eventComponent = new NewEventsItemView({
       userEvent: inputUserEvent,
-      onClick: () => this.#handleRollupButtonItemClick(eventComponent, inputUserEvent)
+      onClick: () => this.#itemViewRollupButtonClick(eventComponent, inputUserEvent)
     });
     render(eventComponent, this.#eventsListComponent.element);
   }
@@ -42,22 +42,22 @@ export default class BoardPresenter {
   #renderEditEventComponent(inputUserEvent, eventComponent) {
     const eventEditComponent = new NewEventEditElementView({
       userEvent: inputUserEvent,
-      onClick: () => this.#handleRollupButtonEditClick(eventEditComponent, inputUserEvent)
+      onClick: () => this.#eventEditViewRollupButtonClick(eventEditComponent, inputUserEvent)
     });
     eventComponent.removeEventListeners();
-    eventComponent.element.replaceWith(eventEditComponent.element);
+    replace(eventEditComponent, eventComponent);
   }
 
-  #handleRollupButtonItemClick = (eventComponent, inputUserEvent) => {
+  #itemViewRollupButtonClick = (eventComponent, inputUserEvent) => {
     this.#renderEditEventComponent(inputUserEvent, eventComponent);
   };
 
-  #handleRollupButtonEditClick = (eventEditComponent, inputUserEvent) => {
+  #eventEditViewRollupButtonClick = (eventEditComponent, inputUserEvent) => {
     const eventComponent = new NewEventsItemView({
       userEvent: inputUserEvent,
-      onClick: () => this.#handleRollupButtonItemClick(eventComponent, inputUserEvent)
+      onClick: () => this.#itemViewRollupButtonClick(eventComponent, inputUserEvent)
     });
     eventEditComponent.removeEventListeners();
-    eventEditComponent.element.replaceWith(eventComponent.element);
+    replace(eventComponent, eventEditComponent);
   };
 }
