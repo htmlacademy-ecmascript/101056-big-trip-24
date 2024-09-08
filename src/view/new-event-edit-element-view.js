@@ -1,4 +1,4 @@
-import { createElement } from '../framework/render';
+import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate } from '../utils/utils';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
@@ -23,8 +23,8 @@ function createOffers (offers) {
   return offersHTML;
 }
 
-function createNewEventEditElementTemplate(eventsList, offersList, inputDestination) {
-  const {basePrice, dateFrom, dateTo, type} = eventsList;
+function createNewEventEditElementTemplate(eventsList) {
+  const {basePrice, dateFrom, dateTo, type, offers, destination} = eventsList;
   const dateStart = humanizeDueDate(dateFrom, TIME_PATTERN);
   const dateEnd = humanizeDueDate(dateTo, TIME_PATTERN);
   return `<li class="trip-events__item">
@@ -93,7 +93,7 @@ function createNewEventEditElementTemplate(eventsList, offersList, inputDestinat
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${inputDestination.name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
                     <datalist id="destination-list-1">
                       <option value="Amsterdam"></option>
                       <option value="Geneva"></option>
@@ -128,39 +128,27 @@ function createNewEventEditElementTemplate(eventsList, offersList, inputDestinat
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
                     <div class="event__available-offers">
-                    ${createOffers(offersList)}
+                    ${createOffers(offers)}
                     </div>
                   </section>
 
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${inputDestination.description}</p>
+                    <p class="event__destination-description">${destination.description}</p>
                   </section>
                 </section>
               </form>
             </li>`;
 }
 
-export default class NewEventEditElementView {
+export default class NewEventEditElementView extends AbstractView {
 
-  constructor ({eventsList, offersList, destination}) {
+  constructor ({eventsList}) {
+    super();
     this.eventsList = eventsList;
-    this.offersList = offersList;
-    this.destination = destination;
   }
 
-  getTemplate () {
+  get template () {
     return createNewEventEditElementTemplate(this.eventsList, this.offersList, this.destination);
-  }
-
-  getElement () {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement () {
-    this.element = null;
   }
 }

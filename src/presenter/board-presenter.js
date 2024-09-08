@@ -4,41 +4,40 @@ import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
-// import NewEventAddElementView from '../view/new-event-add-element-view.js';
 
 const EDIT_ELEMENT_ID = 0;
 
 
 export default class BoardPresenter {
-  sortComponent = new NewTripSortView();
-  eventsListComponent = new NewEventsListView();
+  #container = null;
+  #eventsModel = null;
+
+  #sortComponent = new NewTripSortView();
+  #eventsListComponent = new NewEventsListView();
+
+  #eventsList = [];
 
   constructor ({container, eventsModel}) {
-    this.container = container;
-    this.eventsModel = eventsModel;
+    this.#container = container;
+    this.#eventsModel = eventsModel;
   }
 
   init () {
-    this.eventsList = [...this.eventsModel.getUserEvents()];
+    this.#eventsList = [...this.#eventsModel.userEvents];
 
-    render(this.sortComponent, this.container);
-    render(this.eventsListComponent, this.container);
-    // render(new NewEventAddElementView(), this.eventsListComponent.getElement(), 'AFTERBEGIN');
+    render(this.#sortComponent, this.#container);
+    render(this.#eventsListComponent, this.#container);
 
     render(new NewEventEditElementView({
-      eventsList: this.eventsList[EDIT_ELEMENT_ID],
-      offersList: this.eventsModel.getOffersByIds(this.eventsList[EDIT_ELEMENT_ID].offers),
-      destination: this.eventsModel.getDestination(this.eventsList[EDIT_ELEMENT_ID].destination)
+      eventsList: this.#eventsList[EDIT_ELEMENT_ID]
     }),
-    this.eventsListComponent.getElement());
+    this.#eventsListComponent.element);
 
-    for (let i = 0; i < this.eventsList.length; i ++) {
+    for (let i = 0; i < this.#eventsList.length; i ++) {
       render(new NewEventsItemView({
-        eventsList: this.eventsList[i],
-        offersList: this.eventsModel.getOffersByIds(this.eventsList[i].offers),
-        destination: this.eventsModel.getDestination(this.eventsList[i].destination)
+        eventsList: this.#eventsList[i]
       }),
-      this.eventsListComponent.getElement());
+      this.#eventsListComponent.element);
     }
 
   }

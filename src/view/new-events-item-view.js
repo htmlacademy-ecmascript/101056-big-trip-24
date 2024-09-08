@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { createElement } from '../framework/render';
+import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate } from '../utils/utils';
 
 const TIME_PATTERN = 'hh:mm';
@@ -40,8 +40,8 @@ function createOffers (offers) {
   return offersHTML;
 }
 
-function createNewTripEventsItemTemplate(eventsList, offersList, inputDestination) {
-  const {basePrice, dateFrom, dateTo, isFavorite, type} = eventsList;
+function createNewTripEventsItemTemplate(eventsList) {
+  const {basePrice, dateFrom, dateTo, isFavorite, type, offers, destination} = eventsList;
   const favoriteButtonClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
   const humanizedEventDate = humanizeDueDate(dateFrom, HUMANIZED_EVENT_DATE_PATTERN);
@@ -55,7 +55,7 @@ function createNewTripEventsItemTemplate(eventsList, offersList, inputDestinatio
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
-                <h3 class="event__title">${type} ${inputDestination.name}</h3>
+                <h3 class="event__title">${type} ${destination.name}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
                     <time class="event__start-time" datetime="${dateFrom}">${humanizedStartTime}</time>
@@ -69,7 +69,7 @@ function createNewTripEventsItemTemplate(eventsList, offersList, inputDestinatio
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
-                ${createOffers(offersList)}
+                ${createOffers(offers)}
                 </ul>
                 <button class="event__favorite-btn ${favoriteButtonClassName}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
@@ -84,25 +84,13 @@ function createNewTripEventsItemTemplate(eventsList, offersList, inputDestinatio
             </li>`;
 }
 
-export default class NewEventsItemView {
-  constructor ({eventsList, offersList, destination}) {
+export default class NewEventsItemView extends AbstractView {
+  constructor ({eventsList}) {
+    super();
     this.eventsList = eventsList;
-    this.offersList = offersList;
-    this.destination = destination;
   }
 
-  getTemplate () {
+  get template () {
     return createNewTripEventsItemTemplate(this.eventsList, this.offersList, this.destination);
-  }
-
-  getElement () {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement () {
-    this.element = null;
   }
 }
