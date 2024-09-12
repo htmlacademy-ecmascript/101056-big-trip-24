@@ -1,4 +1,4 @@
-import { getRandomArrayElement, getRandomNumber, getRandomBoolean, getRandomDate } from '../utils/utils';
+import { getRandomArrayElement, getRandomNumber, getRandomBoolean, getRandomDate } from '../utils/common';
 import { EVENTS_TYPES } from '../const';
 
 const TIME_SKIP = 125;

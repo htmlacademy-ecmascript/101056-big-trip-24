@@ -1,9 +1,10 @@
 import { render, replace } from '../framework/render.js';
-import { isEscapeKey } from '../utils/utils.js';
+import { isEscapeKey } from '../utils/common.js';
 import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
+import NoEventsView from '../view/no-events-view.js';
 
 
 export default class BoardPresenter {
@@ -23,12 +24,7 @@ export default class BoardPresenter {
   init () {
     this.#eventsList = [...this.#eventsModel.userEvents];
 
-    render(this.#sortComponent, this.#container);
-    render(this.#eventsListComponent, this.#container);
-
-    for (let i = 0; i < this.#eventsList.length; i++) {
-      this.#renderEvent(this.#eventsList[i]);
-    }
+    this.#renderBoard();
   }
 
   #renderEvent(inputUserEvent) {
@@ -65,5 +61,20 @@ export default class BoardPresenter {
     }
 
     render(eventCardComponent, this.#eventsListComponent.element);
+  }
+
+  #renderBoard () {
+    render(this.#sortComponent, this.#container);
+
+    if (this.#eventsList.length === 0) {
+      render (new NoEventsView(), this.#container);
+      return;
+    }
+
+    render(this.#eventsListComponent, this.#container);
+
+    for (let i = 0; i < this.#eventsList.length; i++) {
+      this.#renderEvent(this.#eventsList[i]);
+    }
   }
 }

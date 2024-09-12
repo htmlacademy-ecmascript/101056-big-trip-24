@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view';
-import { humanizeDueDate } from '../utils/utils';
+import { humanizeDueDate } from '../utils/event';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 

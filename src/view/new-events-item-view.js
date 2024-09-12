@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import AbstractView from '../framework/view/abstract-view';
-import { humanizeDueDate } from '../utils/utils';
+import { humanizeDueDate } from '../utils/event';
 
 const TIME_PATTERN = 'hh:mm';
 const HUMANIZED_EVENT_DATE_PATTERN = 'MMM DD';
