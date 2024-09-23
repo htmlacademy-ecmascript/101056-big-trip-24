@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import { createElement } from '../framework/render';
-import { humanizeDueDate } from '../utils/utils';
+import AbstractView from '../framework/view/abstract-view';
+import { humanizeDueDate } from '../utils/event';
 
 const TIME_PATTERN = 'hh:mm';
 const HUMANIZED_EVENT_DATE_PATTERN = 'MMM DD';
@@ -23,25 +23,25 @@ const getTimeDifference = (timeStart, timeEnd) => {
   }
 };
 
-function createNewOffer (offer) {
+const createNewOffer = (offer) => {
   const {title, price} = offer;
   return `<li class="event__offer">
                     <span class="event__offer-title">${title}</span>
                     &plus;&euro;&nbsp;
                     <span class="event__offer-price">${price}</span>
                   </li>`;
-}
+};
 
-function createOffers (offers) {
+const createOffers = (offers) => {
   let offersHTML = '';
   offers.forEach((offer) => {
     offersHTML += createNewOffer(offer);
   });
   return offersHTML;
-}
+};
 
-function createNewTripEventsItemTemplate(eventsList, offersList, inputDestination) {
-  const {basePrice, dateFrom, dateTo, isFavorite, type} = eventsList;
+const createNewTripEventsItemTemplate = (eventData) => {
+  const {basePrice, dateFrom, dateTo, isFavorite, type, offers, destination} = eventData;
   const favoriteButtonClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
   const humanizedEventDate = humanizeDueDate(dateFrom, HUMANIZED_EVENT_DATE_PATTERN);
@@ -55,7 +55,7 @@ function createNewTripEventsItemTemplate(eventsList, offersList, inputDestinatio
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
-                <h3 class="event__title">${type} ${inputDestination.name}</h3>
+                <h3 class="event__title">${type} ${destination.name}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
                     <time class="event__start-time" datetime="${dateFrom}">${humanizedStartTime}</time>
@@ -69,7 +69,7 @@ function createNewTripEventsItemTemplate(eventsList, offersList, inputDestinatio
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
-                ${createOffers(offersList)}
+                ${createOffers(offers)}
                 </ul>
                 <button class="event__favorite-btn ${favoriteButtonClassName}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
@@ -77,32 +77,39 @@ function createNewTripEventsItemTemplate(eventsList, offersList, inputDestinatio
                     <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
                   </svg>
                 </button>
+
                 <button class="event__rollup-btn" type="button">
                   <span class="visually-hidden">Open event</span>
                 </button>
+
               </div>
             </li>`;
-}
+};
 
-export default class NewEventsItemView {
-  constructor ({eventsList, offersList, destination}) {
-    this.eventsList = eventsList;
-    this.offersList = offersList;
-    this.destination = destination;
+export default class NewEventsItemView extends AbstractView {
+  #eventData = null;
+  #handleClick = null;
+  #rollupButton = null;
+
+  constructor ({userEvent, onClick}) {
+    super();
+    this.#eventData = userEvent;
+    this.#handleClick = onClick;
+    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
+    this.#rollupButton.addEventListener('click', this.#clickHandler);
   }
 
-  getTemplate () {
-    return createNewTripEventsItemTemplate(this.eventsList, this.offersList, this.destination);
+  get template () {
+    return createNewTripEventsItemTemplate(this.#eventData);
   }
 
-  getElement () {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleClick();
+  };
+
+  removeEventListeners() {
+    this.#rollupButton.removeEventListener('click', this.#clickHandler);
   }
 
-  removeElement () {
-    this.element = null;
-  }
 }

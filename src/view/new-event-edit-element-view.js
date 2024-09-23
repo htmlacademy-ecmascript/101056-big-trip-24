@@ -1,9 +1,9 @@
-import { createElement } from '../framework/render';
-import { humanizeDueDate } from '../utils/utils';
+import AbstractView from '../framework/view/abstract-view';
+import { humanizeDueDate } from '../utils/event';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
-function createNewOffer (offer) {
+const createNewOffer = (offer) => {
   const {title, price} = offer;
   return `<div class="event__offer-selector">
                         <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
@@ -13,18 +13,18 @@ function createNewOffer (offer) {
                           <span class="event__offer-price">${price}</span>
                         </label>
                       </div>`;
-}
+};
 
-function createOffers (offers) {
+const createOffers = (offers) => {
   let offersHTML = '';
   offers.forEach((offer) => {
     offersHTML += createNewOffer(offer);
   });
   return offersHTML;
-}
+};
 
-function createNewEventEditElementTemplate(eventsList, offersList, inputDestination) {
-  const {basePrice, dateFrom, dateTo, type} = eventsList;
+const createNewEventEditElementTemplate = (eventData) => {
+  const {basePrice, dateFrom, dateTo, type, offers, destination} = eventData;
   const dateStart = humanizeDueDate(dateFrom, TIME_PATTERN);
   const dateEnd = humanizeDueDate(dateTo, TIME_PATTERN);
   return `<li class="trip-events__item">
@@ -93,7 +93,7 @@ function createNewEventEditElementTemplate(eventsList, offersList, inputDestinat
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${inputDestination.name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
                     <datalist id="destination-list-1">
                       <option value="Amsterdam"></option>
                       <option value="Geneva"></option>
@@ -128,39 +128,57 @@ function createNewEventEditElementTemplate(eventsList, offersList, inputDestinat
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
                     <div class="event__available-offers">
-                    ${createOffers(offersList)}
+                    ${createOffers(offers)}
                     </div>
                   </section>
 
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${inputDestination.description}</p>
+                    <p class="event__destination-description">${destination.description}</p>
                   </section>
                 </section>
               </form>
             </li>`;
-}
+};
 
-export default class NewEventEditElementView {
+export default class NewEventEditElementView extends AbstractView {
+  #eventData = null;
+  #handleClick = null;
+  #rollupButton = null;
 
-  constructor ({eventsList, offersList, destination}) {
-    this.eventsList = eventsList;
-    this.offersList = offersList;
-    this.destination = destination;
+  #handleSubmit = null;
+  #formElement = null;
+
+  constructor ({userEvent, onClick, onSubmit}) {
+    super();
+    this.#eventData = userEvent;
+
+    this.#handleClick = onClick;
+    this.#handleSubmit = onSubmit;
+
+    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
+    this.#rollupButton.addEventListener('click', this.#clickHandler);
+
+    this.#formElement = this.element.querySelector('.event--edit');
+    this.#formElement.addEventListener('submit', this.#submitHandler);
   }
 
-  getTemplate () {
-    return createNewEventEditElementTemplate(this.eventsList, this.offersList, this.destination);
+  get template () {
+    return createNewEventEditElementTemplate(this.#eventData);
   }
 
-  getElement () {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleClick();
+  };
 
-  removeElement () {
-    this.element = null;
+  #submitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleClick();
+  };
+
+  removeEventListeners() {
+    this.#rollupButton.removeEventListener('click', this.#clickHandler);
+    this.#formElement.removeEventListener('submit', this.#submitHandler);
   }
 }

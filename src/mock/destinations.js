@@ -1,4 +1,4 @@
-import { getRandomArrayElement, getRandomNumber} from '../utils/utils';
+import { getRandomArrayElement, getRandomNumber} from '../utils/common';
 import { SENTENCES, CITIES } from '../const';
 
 const getRandomDescription = () => {

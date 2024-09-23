@@ -1,6 +1,11 @@
 import AbstractView from './view/abstract-view.js';
 
-/** @enum {string} Перечисление возможных позиций для отрисовки */
+/** @enum {string}
+ * BEFOREBEGIN - вставить элемент перед началом контейнера
+ * AFTERBEGIN - вставить элемент сразу после начала контейнера
+ * BEFOREEND - вставить элемент перед концом контейнера
+ * AFTEREND - вставить элемент сразу после конца контейнера
+*/
 const RenderPosition = {
   BEFOREBEGIN: 'beforebegin',
   AFTERBEGIN: 'afterbegin',

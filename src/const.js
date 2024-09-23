@@ -37,8 +37,16 @@ const SENTENCES = [
   'In rutrum ac purus sit amet tempus.'
 ];
 
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
 export {
   EVENTS_TYPES,
   CITIES,
-  SENTENCES
+  SENTENCES,
+  FilterType
 };
