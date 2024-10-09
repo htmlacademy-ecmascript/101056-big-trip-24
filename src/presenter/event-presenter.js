@@ -3,18 +3,26 @@ import { isEscapeKey } from '../utils/common.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
 export default class EventPresenter {
   #container = null;
   #handleDataChange = null;
+  #handleModeChange = null;
 
   #eventComponent = null;
   #eventEditComponent = null;
 
   #eventItem = null;
+  #mode = Mode.DEFAULT;
 
-  constructor ({container, onDataChange}) {
+  constructor ({container, onDataChange, onModeChange}) {
     this.#container = container;
     this.#handleDataChange = onDataChange;
+    this.#handleModeChange = onModeChange;
   }
 
   init (eventItem) {
@@ -38,10 +46,10 @@ export default class EventPresenter {
       return;
     }
 
-    if (this.#container.contains(prevEventComponent.element)) {
+    if (this.#mode === Mode.DEFAULT) {
       replace (this.#eventComponent, prevEventComponent);
     }
-    if (this.#container.contains(prevEventEditComponent.element)) {
+    if (this.#mode === Mode.EDITING) {
       replace (this.#eventEditComponent, prevEventEditComponent);
     }
     remove(prevEventComponent);
@@ -51,16 +59,25 @@ export default class EventPresenter {
   #replaceEventCardToEditForm() {
     replace(this.#eventEditComponent, this.#eventComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#handleModeChange();
+    this.#mode = Mode.EDITING;
   }
 
   #replaceEditFormToEventCard() {
     replace(this.#eventComponent, this.#eventEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.DEFAULT;
   }
 
   destroy() {
     remove(this.#eventComponent);
     remove(this.#eventEditComponent);
+  }
+
+  resetView() {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#replaceEditFormToEventCard();
+    }
   }
 
   #escKeyDownHandler = (evt) => {
