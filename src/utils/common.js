@@ -47,7 +47,10 @@ const convertKeysToCamelCase = (items) => {
   return items;
 };
 
+const updateItem = (items, update) => items.map((item) => item.id === update.id ? update : item);
+
 export {
+  updateItem,
   getRandomNumber,
   getRandomString,
   getRandomBoolean,
