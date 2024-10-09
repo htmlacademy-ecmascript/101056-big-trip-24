@@ -1,4 +1,5 @@
 import { render } from '../framework/render.js';
+import { updateItem } from '../utils/common.js';
 import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
@@ -13,6 +14,7 @@ export default class BoardPresenter {
   #eventsListComponent = new NewEventsListView();
 
   #eventsList = [];
+  #eventPresenters = new Map();
 
   constructor ({container, eventsModel}) {
     this.#container = container;
@@ -28,8 +30,10 @@ export default class BoardPresenter {
   #renderEvent(inputUserEvent) {
     const eventPresenter = new EventPresenter({
       container: this.#eventsListComponent.element,
+      onDataChange: this.#handleEventChange,
     });
     eventPresenter.init(inputUserEvent);
+    this.#eventPresenters.set(inputUserEvent.id, eventPresenter);
   }
 
   #renderNoEvents() {
@@ -50,4 +54,15 @@ export default class BoardPresenter {
       this.#renderEvent(this.#eventsList[i]);
     }
   }
+
+  #handleEventChange = (updatedEvent) => {
+    this.#eventsList = updateItem(this.#eventsList, updatedEvent);
+    this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
+  };
+
+  #clearEventList() {
+    this.#eventPresenters.forEach((presenter) => presenter.destroy());
+    this.#eventPresenters.clear();
+  }
+
 }

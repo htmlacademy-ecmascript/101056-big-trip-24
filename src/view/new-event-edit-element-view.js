@@ -169,7 +169,7 @@ export default class NewEventEditElementView extends AbstractView {
 
   #clickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleClick();
+    this.#handleClick(this.#eventData);
   };
 
   #submitHandler = (evt) => {
