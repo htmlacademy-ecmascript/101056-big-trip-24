@@ -10,7 +10,7 @@ export default class BoardPresenter {
   #container = null;
   #eventsModel = null;
 
-  #sortComponent = new NewTripSortView();
+  #sortComponent = null;
   #eventsListComponent = new NewEventsListView();
 
   #eventsList = [];
@@ -41,8 +41,26 @@ export default class BoardPresenter {
     render (new NoEventsView(), this.#container);
   }
 
-  #renderBoard () {
+  #handleSortTypeChange = (sortType) => {
+    if (sortType === undefined) {
+      return;
+    }
+    console.log(sortType);
+    // - Сортируем задачи
+    // - Очищаем список
+    // - Рендерим список заново
+  };
+
+  #renderSort() {
+    this.#sortComponent = new NewTripSortView({
+      onSortTypeChange: this.#handleSortTypeChange
+    });
+
     render(this.#sortComponent, this.#container);
+  }
+
+  #renderBoard () {
+    this.#renderSort();
 
     if (this.#eventsList.length === 0) {
       this.#renderNoEvents();
