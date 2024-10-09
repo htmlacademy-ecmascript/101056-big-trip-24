@@ -4,6 +4,8 @@ import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
+import { SortType } from '../const.js';
+import { sortEventsPrice, sortEventsTime } from '../utils/event.js';
 
 
 export default class BoardPresenter {
@@ -15,6 +17,8 @@ export default class BoardPresenter {
 
   #eventsList = [];
   #eventPresenters = new Map();
+  #currentSortType = SortType.DEFAULT;
+  #sourcedBoardEvents = [];
 
   constructor ({container, eventsModel}) {
     this.#container = container;
@@ -23,7 +27,7 @@ export default class BoardPresenter {
 
   init () {
     this.#eventsList = [...this.#eventsModel.userEvents];
-
+    this.#sourcedBoardEvents = [...this.#eventsModel.userEvents];
     this.#renderBoard();
   }
 
@@ -41,12 +45,28 @@ export default class BoardPresenter {
     render (new NoEventsView(), this.#container);
   }
 
+  #sortEvents(sortType) {
+    switch (sortType) {
+      case SortType.PRICE:
+        this.#eventsList.sort(sortEventsPrice);
+        break;
+      case SortType.TIME:
+        this.#eventsList.sort(sortEventsTime);
+        break;
+      default:
+        this.#eventsList = [...this.#sourcedBoardEvents];
+    }
+
+    this.#currentSortType = sortType;
+  }
+
   #handleSortTypeChange = (sortType) => {
-    if (sortType === undefined) {
+    if (sortType === undefined || this.#currentSortType === sortType) {
       return;
     }
-    console.log(sortType);
+
     // - Сортируем задачи
+    this.#sortEvents(sortType);
     // - Очищаем список
     // - Рендерим список заново
   };
@@ -76,6 +96,7 @@ export default class BoardPresenter {
 
   #handleEventChange = (updatedEvent) => {
     this.#eventsList = updateItem(this.#eventsList, updatedEvent);
+    this.#sourcedBoardEvents = updateItem(this.#sourcedBoardEvents, updatedEvent);
     this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
   };
 
