@@ -174,7 +174,7 @@ export default class NewEventEditElementView extends AbstractView {
 
   #submitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleClick();
+    this.#handleClick(this.#eventData);
   };
 
   removeEventListeners() {

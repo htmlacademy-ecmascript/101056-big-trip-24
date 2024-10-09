@@ -29,6 +29,7 @@ export default class BoardPresenter {
     this.#eventsList = [...this.#eventsModel.userEvents];
     this.#sourcedBoardEvents = [...this.#eventsModel.userEvents];
     this.#renderBoard();
+    this.#renderSort();
   }
 
   #renderEvent(inputUserEvent) {
@@ -65,10 +66,10 @@ export default class BoardPresenter {
       return;
     }
 
-    // - Сортируем задачи
     this.#sortEvents(sortType);
-    // - Очищаем список
-    // - Рендерим список заново
+
+    this.#clearEventList();
+    this.#renderBoard();
   };
 
   #renderSort() {
@@ -76,12 +77,10 @@ export default class BoardPresenter {
       onSortTypeChange: this.#handleSortTypeChange
     });
 
-    render(this.#sortComponent, this.#container);
+    render(this.#sortComponent, this.#container, 'AFTERBEGIN');
   }
 
   #renderBoard () {
-    this.#renderSort();
-
     if (this.#eventsList.length === 0) {
       this.#renderNoEvents();
       return;
