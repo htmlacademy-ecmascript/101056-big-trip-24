@@ -1,5 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { humanizeDueDate } from '../utils/event';
+import { EVENTS_TYPES } from '../const';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
@@ -23,6 +24,22 @@ const createOffers = (offers) => {
   return offersHTML;
 };
 
+const createType = (type) => {
+  const typeToLowerCase = type.toLowerCase();
+  return `<div class="event__type-item">
+                          <input id="event-type-${typeToLowerCase}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${typeToLowerCase}">
+                          <label class="event__type-label  event__type-label--${typeToLowerCase}" for="event-type-${typeToLowerCase}-1" data-event-type="${type}" >${type}</label>
+                        </div>`;
+};
+
+const createTypes = (types) => {
+  let typesHTML = '';
+  types.forEach((type) => {
+    typesHTML += createType(type);
+  });
+  return typesHTML;
+};
+
 const createNewEventEditElementTemplate = (eventData) => {
   const {basePrice, type, offers, destination, dateStart, dateEnd} = eventData;
 
@@ -39,51 +56,7 @@ const createNewEventEditElementTemplate = (eventData) => {
                     <div class="event__type-list">
                       <fieldset class="event__type-group">
                         <legend class="visually-hidden">Event type</legend>
-
-                        <div class="event__type-item">
-                          <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-                          <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-                          <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-                          <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-                          <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-                          <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
-                          <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-                          <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-                          <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-                        </div>
-
-                        <div class="event__type-item">
-                          <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-                          <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-                        </div>
+                        ${createTypes(EVENTS_TYPES)}
                       </fieldset>
                     </div>
                   </div>
@@ -92,7 +65,7 @@ const createNewEventEditElementTemplate = (eventData) => {
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="${destination.id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
                     <datalist id="destination-list-1">
                       <option value="Amsterdam"></option>
                       <option value="Geneva"></option>
@@ -141,6 +114,7 @@ const createNewEventEditElementTemplate = (eventData) => {
 };
 
 export default class NewEventEditElementView extends AbstractStatefulView {
+  #form = null;
   #eventData = null;
   #handleClick = null;
   #rollupButton = null;
@@ -156,15 +130,34 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.#handleClick = onClick;
     this.#handleSubmit = onSubmit;
 
-    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
-    this.#rollupButton.addEventListener('click', this.#clickHandler);
+    this._restoreHandlers();
 
-    this.#formElement = this.element.querySelector('.event--edit');
-    this.#formElement.addEventListener('submit', this.#submitHandler);
   }
 
   get template () {
     return createNewEventEditElementTemplate(this._state);
+  }
+
+  _restoreHandlers() {
+    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
+    this.#formElement = this.element.querySelector('.event--edit');
+    this.#formElement.addEventListener('submit', this.#submitHandler);
+    this.#rollupButton.addEventListener('click', this.#clickHandler);
+
+    this.element.querySelector('#event-price-1')
+      .addEventListener('input', this.#eventPriceToggleHandler);
+    this.element.querySelector('.event__input--destination')
+      .addEventListener('input', this.#eventDestinationToggleHandler);
+
+    this.element.querySelector('#event-start-time-1')
+      .addEventListener('input', this.#eventStartTimeToggleHandler);
+    this.element.querySelector('#event-end-time-1')
+      .addEventListener('input', this.#eventEndTimeToggleHandler);
+    this.element.querySelectorAll('.event__type-label')
+      .forEach((label) => {
+        label.addEventListener('click', this.#eventEventTypeToggleHandler);
+      });
+
   }
 
   #clickHandler = (evt) => {
@@ -197,4 +190,40 @@ export default class NewEventEditElementView extends AbstractStatefulView {
 
     return eventData;
   }
+
+  #eventPriceToggleHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      basePrice: evt.target.value,
+    });
+  };
+
+  #eventDestinationToggleHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      destination: evt.target.value,
+    });
+  };
+
+  #eventStartTimeToggleHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      dateStart: evt.target.value,
+    });
+  };
+
+  #eventEndTimeToggleHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      dateEnd: evt.target.value,
+    });
+  };
+
+  #eventEventTypeToggleHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({
+      type: evt.target.dataset.eventType,
+    });
+  };
+
 }
