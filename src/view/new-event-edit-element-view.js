@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { humanizeDueDate } from '../utils/event';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
@@ -24,9 +24,8 @@ const createOffers = (offers) => {
 };
 
 const createNewEventEditElementTemplate = (eventData) => {
-  const {basePrice, dateFrom, dateTo, type, offers, destination} = eventData;
-  const dateStart = humanizeDueDate(dateFrom, TIME_PATTERN);
-  const dateEnd = humanizeDueDate(dateTo, TIME_PATTERN);
+  const {basePrice, type, offers, destination, dateStart, dateEnd} = eventData;
+
   return `<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
                 <header class="event__header">
@@ -141,7 +140,7 @@ const createNewEventEditElementTemplate = (eventData) => {
             </li>`;
 };
 
-export default class NewEventEditElementView extends AbstractView {
+export default class NewEventEditElementView extends AbstractStatefulView {
   #eventData = null;
   #handleClick = null;
   #rollupButton = null;
@@ -152,6 +151,7 @@ export default class NewEventEditElementView extends AbstractView {
   constructor ({userEvent, onClick, onSubmit}) {
     super();
     this.#eventData = userEvent;
+    this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
     this.#handleSubmit = onSubmit;
@@ -164,7 +164,7 @@ export default class NewEventEditElementView extends AbstractView {
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this.#eventData);
+    return createNewEventEditElementTemplate(this._state);
   }
 
   #clickHandler = (evt) => {
@@ -174,11 +174,27 @@ export default class NewEventEditElementView extends AbstractView {
 
   #submitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleClick(this.#eventData);
+    this.#handleClick(NewEventEditElementView.parseStateToEventData(this._state));
   };
 
   removeEventListeners() {
     this.#rollupButton.removeEventListener('click', this.#clickHandler);
     this.#formElement.removeEventListener('submit', this.#submitHandler);
+  }
+
+  static parseEventDataToState(eventData) {
+    return {...eventData,
+      dateStart: humanizeDueDate(eventData.dateFrom, TIME_PATTERN),
+      dateEnd: humanizeDueDate(eventData.dateTo, TIME_PATTERN),
+    };
+  }
+
+  static parseStateToEventData(state) {
+    const eventData = {...state};
+
+    delete eventData.dateStart;
+    delete eventData.dateEnd;
+
+    return eventData;
   }
 }
