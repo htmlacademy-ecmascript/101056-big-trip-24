@@ -3,13 +3,9 @@ import { getRandomOffers } from '../mock/offers';
 import { getRandomDestinations } from '../mock/destinations';
 import { convertKeysToCamelCase } from '../utils/common';
 
-const EVENTS_COUNT = 5;
+const EVENTS_COUNT = 6;
 
-const createUserEvents = () => {
-  const offersList = convertKeysToCamelCase(getRandomOffers());
-  const destinationsList = convertKeysToCamelCase(getRandomDestinations());
-  const eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, destinationsList));
-
+const createUserEvents = (offersList, destinationsList, eventsList) => {
   const destinationsMap = new Map(destinationsList.map((destination) => [destination.id, destination]));
   const offers = offersList[0].offers;
 
@@ -36,7 +32,15 @@ const createUserEvents = () => {
 };
 
 export default class EventsConnector {
+  #offersList = convertKeysToCamelCase(getRandomOffers());
+  #destinationsList = convertKeysToCamelCase(getRandomDestinations());
+  #eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.#destinationsList));
+
   get userEvents () {
-    return structuredClone(createUserEvents());
+    return structuredClone(createUserEvents(this.#offersList, this.#destinationsList, this.#eventsList));
+  }
+
+  get destinationsList () {
+    return this.#destinationsList;
   }
 }

@@ -1,6 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { humanizeDueDate } from '../utils/event';
 import { EVENTS_TYPES } from '../const';
+import EventsModel from '../model/events-model';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
@@ -40,7 +41,21 @@ const createTypes = (types) => {
   return typesHTML;
 };
 
-const createNewEventEditElementTemplate = (eventData) => {
+const createDestination = (destination) => `<option data-destination-id="${destination.id}" value="${destination.name}">${destination.name}</option>`;
+
+const createDestinations = (destinationsList) => {
+  if (!Array.isArray(destinationsList)) {
+    return;
+  }
+
+  let destinationsHTML = '';
+  destinationsList.forEach((destination) => {
+    destinationsHTML += createDestination(destination);
+  });
+  return destinationsHTML;
+};
+
+const createNewEventEditElementTemplate = (eventData, destinationsList) => {
   const {basePrice, type, offers, destination, dateStart, dateEnd} = eventData;
 
   return `<li class="trip-events__item">
@@ -67,9 +82,7 @@ const createNewEventEditElementTemplate = (eventData) => {
                     </label>
                     <input class="event__input  event__input--destination" id="${destination.id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
                     <datalist id="destination-list-1">
-                      <option value="Amsterdam"></option>
-                      <option value="Geneva"></option>
-                      <option value="Chamonix"></option>
+                    ${createDestinations(destinationsList)}
                     </datalist>
                   </div>
 
@@ -114,10 +127,11 @@ const createNewEventEditElementTemplate = (eventData) => {
 };
 
 export default class NewEventEditElementView extends AbstractStatefulView {
-  #form = null;
+  #EventsModel = new EventsModel;
   #eventData = null;
   #handleClick = null;
   #rollupButton = null;
+  #destinationsList = null;
 
   #handleSubmit = null;
   #formElement = null;
@@ -125,6 +139,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   constructor ({userEvent, onClick, onSubmit}) {
     super();
     this.#eventData = userEvent;
+    this.#destinationsList = this.#EventsModel.destinationsList;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
@@ -135,7 +150,13 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this._state);
+    return createNewEventEditElementTemplate(this._state, this.#destinationsList);
+  }
+
+  reset (eventData) {
+    this.updateElement(
+      NewEventEditElementView.parseEventDataToState(eventData),
+    );
   }
 
   _restoreHandlers() {
@@ -147,7 +168,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.element.querySelector('#event-price-1')
       .addEventListener('input', this.#eventPriceToggleHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('input', this.#eventDestinationToggleHandler);
+      .addEventListener('change', this.#eventDestinationToggleHandler);
 
     this.element.querySelector('#event-start-time-1')
       .addEventListener('input', this.#eventStartTimeToggleHandler);
@@ -199,9 +220,21 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   };
 
   #eventDestinationToggleHandler = (evt) => {
-    evt.preventDefault();
-    this._setState({
-      destination: evt.target.value,
+    const inputValue = evt.target.value;
+    const options = document.querySelectorAll('#destination-list-1 option');
+
+    options.forEach((option) => {
+      if (option.value === inputValue) {
+        const cityId = option.getAttribute('data-destination-id');
+
+        const selectedDestination = this.#destinationsList.find((destination) => destination.id === cityId);
+
+        if (selectedDestination) {
+          this.updateElement({
+            destination: selectedDestination,
+          });
+        }
+      }
     });
   };
 
