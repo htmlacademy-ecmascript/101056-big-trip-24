@@ -1,8 +1,8 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
-import { humanizeDueDate } from '../utils/event';
 import { EVENTS_TYPES } from '../const';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
-const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
 const createNewOffer = (offer) => {
   const {title, price} = offer;
@@ -55,7 +55,7 @@ const createDestinations = (destinationsList) => {
 };
 
 const createNewEventEditElementTemplate = (eventData, destinationsList) => {
-  const {basePrice, type, offers, destination, dateStart, dateEnd} = eventData;
+  const {basePrice, type, offers, destination, dateFrom, dateTo} = eventData;
 
   return `<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -87,10 +87,10 @@ const createNewEventEditElementTemplate = (eventData, destinationsList) => {
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateStart}">
+                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom}">
                     &mdash;
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateEnd}">
+                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTo}">
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -130,6 +130,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #handleClick = null;
   #rollupButton = null;
   #getDestinationsData = null;
+  #datepicker = null;
 
   #handleSubmit = null;
   #formElement = null;
@@ -152,6 +153,15 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     return createNewEventEditElementTemplate(this._state, this.#getDestinationsData());
   }
 
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepicker) {
+      this.#datepicker.destroy();
+      this.#datepicker = null;
+    }
+  }
+
   reset (eventData) {
     this.updateElement(
       NewEventEditElementView.parseEventDataToState(eventData),
@@ -169,8 +179,6 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination')
       .addEventListener('input', this.#eventDestinationToggleHandler);
 
-    this.element.querySelector('#event-start-time-1')
-      .addEventListener('input', this.#eventStartTimeToggleHandler);
     this.element.querySelector('#event-end-time-1')
       .addEventListener('input', this.#eventEndTimeToggleHandler);
     this.element.querySelectorAll('.event__type-label')
@@ -178,6 +186,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
         label.addEventListener('click', this.#eventEventTypeToggleHandler);
       });
 
+    this.#setDatepicker();
   }
 
   #clickHandler = (evt) => {
@@ -195,20 +204,48 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.#formElement.removeEventListener('submit', this.#submitHandler);
   }
 
+  #setDatepicker() {
+    const timeInputs = this.element.querySelectorAll('.event__input--time');
+
+    timeInputs.forEach((input, index) => {
+      let date = '';
+      if (index) {
+        date = this._state.dateTo;
+      } else {
+        date = this._state.dateFrom;
+      }
+      this.#datepicker = flatpickr(input, {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: date,
+        onChange: (selectedDates) => this.#eventStartTimeToggleHandler(selectedDates, index),
+      });
+      if (index) {
+        this.#datepicker.set('minDate', this._state.dateTo);
+      } else {
+        this.#datepicker.set('maxDate', this._state.dateFrom);
+      }
+    });
+  }
+
+  #eventStartTimeToggleHandler = ([userDate], index) => {
+    if (index) {
+      this.updateElement({
+        dateTo: userDate,
+      });
+    } else {
+      this.updateElement({
+        dateFrom: userDate,
+      });
+    }
+  };
+
   static parseEventDataToState(eventData) {
-    return {...eventData,
-      dateStart: humanizeDueDate(eventData.dateFrom, TIME_PATTERN),
-      dateEnd: humanizeDueDate(eventData.dateTo, TIME_PATTERN),
-    };
+    return eventData;
   }
 
   static parseStateToEventData(state) {
-    const eventData = {...state};
-
-    delete eventData.dateStart;
-    delete eventData.dateEnd;
-
-    return eventData;
+    return state;
   }
 
   #eventPriceToggleHandler = (evt) => {
@@ -237,16 +274,9 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     });
   };
 
-  #eventStartTimeToggleHandler = (evt) => {
-    evt.preventDefault();
-    this._setState({
-      dateStart: evt.target.value,
-    });
-  };
-
   #eventEndTimeToggleHandler = (evt) => {
     evt.preventDefault();
-    this._setState({
+    this.updateElement({
       dateEnd: evt.target.value,
     });
   };
