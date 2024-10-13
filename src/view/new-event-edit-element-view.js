@@ -206,39 +206,41 @@ export default class NewEventEditElementView extends AbstractStatefulView {
 
   #setDatepicker() {
     const timeInputs = this.element.querySelectorAll('.event__input--time');
+    this.datepickers = [];
 
     timeInputs.forEach((input, index) => {
-      let date = '';
-      if (index) {
-        date = this._state.dateTo;
-      } else {
-        date = this._state.dateFrom;
-      }
-      this.#datepicker = flatpickr(input, {
+      const date = index ? this._state.dateTo : this._state.dateFrom;
+      const options = {
         enableTime: true,
         dateFormat: 'd/m/y H:i',
         defaultDate: date,
         onChange: (selectedDates) => this.#eventStartTimeToggleHandler(selectedDates, index),
-      });
-      if (index) {
-        this.#datepicker.set('minDate', this._state.dateTo);
-      } else {
-        this.#datepicker.set('maxDate', this._state.dateFrom);
-      }
+      };
+
+      const datepickerInstance = flatpickr(input, options);
+      this.datepickers[index] = datepickerInstance;
+
+      this.#updateDatePickerConstraints(index);
     });
   }
 
   #eventStartTimeToggleHandler = ([userDate], index) => {
-    if (index) {
-      this.updateElement({
-        dateTo: userDate,
-      });
-    } else {
-      this.updateElement({
-        dateFrom: userDate,
-      });
-    }
+    this.updateElement({
+      [index ? 'dateTo' : 'dateFrom']: userDate,
+    });
+    this.#updateDatePickerConstraints(index);
   };
+
+  #updateDatePickerConstraints(index) {
+    const minDate = this._state.dateFrom;
+    const maxDate = this._state.dateTo;
+
+    if (index) {
+      this.datepickers[index].set('minDate', minDate);
+    } else {
+      this.datepickers[index].set('maxDate', maxDate);
+    }
+  }
 
   static parseEventDataToState(eventData) {
     return eventData;
