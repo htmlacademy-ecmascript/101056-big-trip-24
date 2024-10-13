@@ -12,6 +12,8 @@ export default class EventPresenter {
   #container = null;
   #handleDataChange = null;
   #handleModeChange = null;
+  #findDestinationData = null;
+  #getDestinationsList = null;
 
   #eventComponent = null;
   #eventEditComponent = null;
@@ -19,10 +21,12 @@ export default class EventPresenter {
   #eventItem = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({container, onDataChange, onModeChange}) {
+  constructor ({container, onDataChange, onModeChange, findDestinationData, getDestinationsList}) {
     this.#container = container;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
+    this.#findDestinationData = findDestinationData;
+    this.#getDestinationsList = getDestinationsList;
   }
 
   init (eventItem) {
@@ -39,6 +43,8 @@ export default class EventPresenter {
     this.#eventEditComponent = new NewEventEditElementView({
       userEvent: this.#eventItem,
       onClick: this.#handleSaveClick,
+      findDestination: this.#findDestinationData,
+      getDestinationsData: this.#getDestinationsList,
     });
 
     if (prevEventComponent === null || prevEventEditComponent === null) {

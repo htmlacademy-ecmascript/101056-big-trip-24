@@ -1,7 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { humanizeDueDate } from '../utils/event';
 import { EVENTS_TYPES } from '../const';
-import EventsModel from '../model/events-model';
 
 const TIME_PATTERN = 'DD/MM/YY hh:mm';
 
@@ -127,19 +126,19 @@ const createNewEventEditElementTemplate = (eventData, destinationsList) => {
 };
 
 export default class NewEventEditElementView extends AbstractStatefulView {
-  #EventsModel = new EventsModel;
   #eventData = null;
   #handleClick = null;
   #rollupButton = null;
-  #destinationsList = null;
+  #getDestinationsData = null;
 
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, onSubmit}) {
+  constructor ({userEvent, onClick, findDestination, getDestinationsData, onSubmit}) {
     super();
     this.#eventData = userEvent;
-    this.#destinationsList = this.#EventsModel.destinationsList;
+    this.findDestinationData = findDestination;
+    this.#getDestinationsData = getDestinationsData;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
@@ -150,7 +149,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this._state, this.#destinationsList);
+    return createNewEventEditElementTemplate(this._state, this.#getDestinationsData());
   }
 
   reset (eventData) {
@@ -168,7 +167,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.element.querySelector('#event-price-1')
       .addEventListener('input', this.#eventPriceToggleHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('change', this.#eventDestinationToggleHandler);
+      .addEventListener('input', this.#eventDestinationToggleHandler);
 
     this.element.querySelector('#event-start-time-1')
       .addEventListener('input', this.#eventStartTimeToggleHandler);
@@ -227,7 +226,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
       if (option.value === inputValue) {
         const cityId = option.getAttribute('data-destination-id');
 
-        const selectedDestination = this.#destinationsList.find((destination) => destination.id === cityId);
+        const selectedDestination = this.findDestinationData(cityId);
 
         if (selectedDestination) {
           this.updateElement({

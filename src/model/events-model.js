@@ -9,7 +9,7 @@ export default class EventsModel {
     return this.#eventsList;
   }
 
-  get destinationsList () {
-    return this.#destinationsList;
-  }
+  getDestinationsData = () => this.#destinationsList;
+  findDestinationData = (destinationId) => this.#destinationsList.find((destination) => destination.id === destinationId);
+
 }

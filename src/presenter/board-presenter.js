@@ -19,10 +19,14 @@ export default class BoardPresenter {
   #eventPresenters = new Map();
   #currentSortType = SortType.DEFAULT;
   #sourcedBoardEvents = [];
+  #findDestinationData = null;
+  #getDestinationsData = null;
 
   constructor ({container, eventsModel}) {
     this.#container = container;
     this.#eventsModel = eventsModel;
+    this.#findDestinationData = this.#eventsModel.findDestinationData;
+    this.#getDestinationsData = this.#eventsModel.getDestinationsData;
   }
 
   init () {
@@ -37,6 +41,8 @@ export default class BoardPresenter {
       container: this.#eventsListComponent.element,
       onDataChange: this.#handleEventChange,
       onModeChange: this.#handleModeChange,
+      findDestinationData: this.#findDestinationData,
+      getDestinationsList: this.#getDestinationsData,
     });
     eventPresenter.init(inputUserEvent);
     this.#eventPresenters.set(inputUserEvent.id, eventPresenter);
