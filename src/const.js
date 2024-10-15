@@ -44,9 +44,16 @@ const FilterType = {
   PAST: 'past',
 };
 
+const SortType = {
+  DEFAULT: 'default',
+  PRICE: 'price',
+  TIME: 'time',
+};
+
 export {
   EVENTS_TYPES,
   CITIES,
   SENTENCES,
-  FilterType
+  FilterType,
+  SortType
 };

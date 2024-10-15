@@ -1,27 +1,31 @@
-import { getRandomNumber} from '../utils/common';
+import { getRandomNumber } from '../utils/common';
+import { nanoid } from 'nanoid';
+import { EVENTS_TYPES } from '../const';
 
-const OFFERS_COUNT = 4;
+const OFFERS_COUNT = 3;
 
-const getRandomOffer = (id) => {
+const getRandomOffer = (index) => {
   const offer = {
-    'id': `${id }4c3e4e6-9053-42ce-b747-e281314baa31`,
-    'title': `Upgrade ${ id}`,
-    'price': getRandomNumber(19,499)
+    'id': nanoid(),
+    'title': `Upgrade ${index}`,
+    'price': getRandomNumber(19, 499)
   };
   return offer;
 };
 
-const getRandomOffers = (type) => {
-  const randomOffers = [
-    {
-      'type': type,
-      'offers': []
-    }
-  ];
-
-  for (let i = 0; i < OFFERS_COUNT; i ++) {
-    randomOffers[0].offers.push(getRandomOffer(i));
+const getRandomOffersOfSameType = (type) => {
+  const offers = [];
+  for (let i = 0; i < OFFERS_COUNT; i++) {
+    offers.push(getRandomOffer(i));
   }
+  return {
+    'type': type.toLowerCase(),
+    'offers': offers
+  };
+};
+
+const getRandomOffers = () => {
+  const randomOffers = EVENTS_TYPES.map((type) => getRandomOffersOfSameType(type));
   return randomOffers;
 };
 
