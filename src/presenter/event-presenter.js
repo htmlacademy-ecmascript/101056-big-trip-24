@@ -13,7 +13,7 @@ export default class EventPresenter {
   #handleDataChange = null;
   #handleModeChange = null;
   #findDestinationData = null;
-  #getDestinationsList = null;
+  #destinationsData = null;
   #getOffersMapByType = null;
 
   #eventComponent = null;
@@ -22,12 +22,12 @@ export default class EventPresenter {
   #eventItem = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({container, onDataChange, onModeChange, findDestinationData, getDestinationsList, getOffersMapByType}) {
+  constructor ({container, onDataChange, onModeChange, findDestinationData, destinationsData, getOffersMapByType}) {
     this.#container = container;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
     this.#findDestinationData = findDestinationData;
-    this.#getDestinationsList = getDestinationsList;
+    this.#destinationsData = destinationsData;
     this.#getOffersMapByType = getOffersMapByType;
   }
 
@@ -45,8 +45,8 @@ export default class EventPresenter {
     this.#eventEditComponent = new NewEventEditElementView({
       userEvent: this.#eventItem,
       onClick: this.#handleSaveClick,
-      findDestination: this.#findDestinationData,
-      getDestinationsData: this.#getDestinationsList,
+      findDestinationData: this.#findDestinationData,
+      destinationsData: this.#destinationsData,
       getOffersMapByType: this.#getOffersMapByType,
     });
 

@@ -3,16 +3,18 @@ import EventsConnector from './events-connector';
 export default class EventsModel {
   #EventsConnector = new EventsConnector;
   #eventsList = this.#EventsConnector.userEvents;
-  #destinationsList = this.#EventsConnector.destinationsList;
+  #destinationsData = this.#EventsConnector.destinationsData;
   #offersMap = this.#EventsConnector.offersMap;
 
   get userEvents () {
     return this.#eventsList;
   }
 
-  getDestinationsData = () => this.#destinationsList;
+  get destinationsData() {
+    return this.#destinationsData;
+  }
 
-  findDestinationData = (destinationId) => this.#destinationsList.find((destination) => destination.id === destinationId);
+  findDestinationData = (destinationId) => this.#destinationsData.find((destination) => destination.id === destinationId);
 
   getOffersMapByType = (type) => this.#offersMap.get(type) || null;
 

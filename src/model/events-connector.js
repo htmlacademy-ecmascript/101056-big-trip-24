@@ -6,10 +6,10 @@ import { convertKeysToCamelCase } from '../utils/common';
 const EVENTS_COUNT = 5;
 
 export default class EventsConnector {
-  #destinationsList = convertKeysToCamelCase(getRandomDestinations());
+  #destinationsData = convertKeysToCamelCase(getRandomDestinations());
   #offersMap = this.#initializeOffersMap(convertKeysToCamelCase(getRandomOffers()));
   #clonedOffersMap = structuredClone(this.#offersMap);
-  #eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.#destinationsList, this.#clonedOffersMap));
+  #eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.#destinationsData, this.#clonedOffersMap));
 
   #initializeOffersMap (data) {
     return data.reduce((offersMap, { type, offers }) => {
@@ -43,7 +43,7 @@ export default class EventsConnector {
   }
 
   #createUserEvents () {
-    const destinationsMap = new Map(this.#destinationsList.map(({ id, ...rest }) => [id, rest]));
+    const destinationsMap = new Map(this.#destinationsData.map(({ id, ...rest }) => [id, rest]));
 
     return Array.from(this.#eventsList.map((event) => {
       const destinationData = destinationsMap.get(event.destination);
@@ -66,8 +66,8 @@ export default class EventsConnector {
     return this.#createUserEvents();
   }
 
-  get destinationsList () {
-    return this.#destinationsList;
+  get destinationsData () {
+    return this.#destinationsData;
   }
 
   get offersMap () {

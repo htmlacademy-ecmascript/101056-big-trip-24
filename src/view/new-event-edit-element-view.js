@@ -28,7 +28,7 @@ const createType = (type) => {
   const typeToLowerCase = type.toLowerCase();
   return `<div class="event__type-item">
                           <input id="event-type-${typeToLowerCase}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${typeToLowerCase}">
-                          <label class="event__type-label  event__type-label--${typeToLowerCase}" for="event-type-${typeToLowerCase}-1" data-event-type="${type}" >${type}</label>
+                          <label class="event__type-label  event__type-label--${typeToLowerCase}" for="event-type-${typeToLowerCase}-1" data-event-type="${typeToLowerCase}" >${type}</label>
                         </div>`;
 };
 
@@ -129,7 +129,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #eventData = null;
   #handleClick = null;
   #rollupButton = null;
-  #getDestinationsData = null;
+  #destinationsData = null;
   #findDestinationData = null;
   #getOffersMapByType = null;
   #datepicker = null;
@@ -137,11 +137,11 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, findDestination, getDestinationsData, getOffersMapByType, onSubmit}) {
+  constructor ({userEvent, onClick, findDestinationData, destinationsData, getOffersMapByType, onSubmit}) {
     super();
     this.#eventData = userEvent;
-    this.#findDestinationData = findDestination;
-    this.#getDestinationsData = getDestinationsData;
+    this.#findDestinationData = findDestinationData;
+    this.#destinationsData = destinationsData;
     this.#getOffersMapByType = getOffersMapByType;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
@@ -153,7 +153,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this._state, this.#getDestinationsData());
+    return createNewEventEditElementTemplate(this._state, this.#destinationsData);
   }
 
   removeElement() {
@@ -283,11 +283,10 @@ export default class NewEventEditElementView extends AbstractStatefulView {
 
   #eventTypeToggleHandler = (evt) => {
     evt.preventDefault();
-    const newType = evt.target.dataset.eventType.toLowerCase();
 
     this.updateElement({
       type: evt.target.dataset.eventType,
-      offers: this.#getOffersMapByType(newType),
+      offers: this.#getOffersMapByType(evt.target.dataset.eventType),
     });
   };
 
