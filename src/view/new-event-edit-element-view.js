@@ -4,11 +4,11 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
 
-const createNewOffer = (offer) => {
-  const {title, price} = offer;
+const createNewOffer = (id, offer) => {
+  const { title, price, isActive } = offer;
   return `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-                        <label class="event__offer-label" for="event-offer-luggage-1">
+                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}" type="checkbox" name="event-offer-luggage" ${isActive ? 'checked' : ''}>
+                        <label class="event__offer-label" for="event-offer-${id}" data-offer-id="${id}">
                           <span class="event__offer-title">${title}</span>
                           &plus;&euro;&nbsp;
                           <span class="event__offer-price">${price}</span>
@@ -16,10 +16,10 @@ const createNewOffer = (offer) => {
                       </div>`;
 };
 
-const createOffers = (offers) => {
+const createOffers = (offersMap) => {
   let offersHTML = '';
-  offers.forEach((offer) => {
-    offersHTML += createNewOffer(offer);
+  offersMap.forEach((offer, id) => {
+    offersHTML += createNewOffer(id, offer);
   });
   return offersHTML;
 };
@@ -130,16 +130,19 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #handleClick = null;
   #rollupButton = null;
   #getDestinationsData = null;
+  #findDestinationData = null;
+  #getOffersMapByType = null;
   #datepicker = null;
 
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, findDestination, getDestinationsData, onSubmit}) {
+  constructor ({userEvent, onClick, findDestination, getDestinationsData, getOffersMapByType, onSubmit}) {
     super();
     this.#eventData = userEvent;
-    this.findDestinationData = findDestination;
+    this.#findDestinationData = findDestination;
     this.#getDestinationsData = getDestinationsData;
+    this.#getOffersMapByType = getOffersMapByType;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
@@ -179,11 +182,13 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination')
       .addEventListener('input', this.#eventDestinationToggleHandler);
 
-    this.element.querySelector('#event-end-time-1')
-      .addEventListener('input', this.#eventEndTimeToggleHandler);
     this.element.querySelectorAll('.event__type-label')
       .forEach((label) => {
-        label.addEventListener('click', this.#eventEventTypeToggleHandler);
+        label.addEventListener('click', this.#eventTypeToggleHandler);
+      });
+    this.element.querySelectorAll('.event__offer-label')
+      .forEach((label) => {
+        label.addEventListener('click', this.#eventOfferToggleHandler);
       });
 
     this.#setDatepicker();
@@ -265,7 +270,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
       if (option.value === inputValue) {
         const cityId = option.getAttribute('data-destination-id');
 
-        const selectedDestination = this.findDestinationData(cityId);
+        const selectedDestination = this.#findDestinationData(cityId);
 
         if (selectedDestination) {
           this.updateElement({
@@ -276,18 +281,31 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     });
   };
 
-  #eventEndTimeToggleHandler = (evt) => {
+  #eventTypeToggleHandler = (evt) => {
     evt.preventDefault();
+    const newType = evt.target.dataset.eventType.toLowerCase();
+
     this.updateElement({
-      dateEnd: evt.target.value,
+      type: evt.target.dataset.eventType,
+      offers: this.#getOffersMapByType(newType),
     });
   };
 
-  #eventEventTypeToggleHandler = (evt) => {
+  #eventOfferToggleHandler = (evt) => {
     evt.preventDefault();
-    this.updateElement({
-      type: evt.target.dataset.eventType,
-    });
+
+    const offerId = evt.currentTarget.dataset.offerId;
+    const offers = new Map (this._state.offers);
+
+    if (offers.has(offerId)) {
+      const offer = offers.get(offerId);
+      offer.isActive = !offer.isActive;
+      offers.set(offerId, offer);
+
+      this.updateElement({
+        offers: offers,
+      });
+    }
   };
 
 }

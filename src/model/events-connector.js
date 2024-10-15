@@ -7,63 +7,77 @@ const EVENTS_COUNT = 5;
 
 export default class EventsConnector {
   #destinationsList = convertKeysToCamelCase(getRandomDestinations());
-  #offersMap = this.#createOffersMap(convertKeysToCamelCase(getRandomOffers()));
-  #eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.#destinationsList, this.#offersMap));
+  #offersMap = this.#initializeOffersMap(convertKeysToCamelCase(getRandomOffers()));
+  #clonedOffersMap = structuredClone(this.#offersMap);
+  #eventsList = convertKeysToCamelCase(getRandomEvents(EVENTS_COUNT, this.#destinationsList, this.#clonedOffersMap));
 
-  #createOffersMap(data) {
-    const offersMap = new Map();
-    data.forEach((item) => {
-      const { type, offers } = item;
-      const offersById = new Map();
-
-      offers.forEach((offer) => {
-        const { id, title, price } = offer;
-        offersById.set(id, { title, price });
-      });
+  #initializeOffersMap(data) {
+    return data.reduce((offersMap, { type, offers }) => {
+      const offersById = offers.reduce((map, { id, title, price }) => {
+        map.set(id, { title, price, isActive: false });
+        return map;
+      }, new Map());
 
       offersMap.set(type, offersById);
-    });
+      return offersMap;
+    }, new Map());
+  }
 
-    return offersMap;
+  #updateOffersActivity() {
+    this.#eventsList.forEach(({ offers: eventOffers, type }) => {
+      const offersById = this.#clonedOffersMap.get(type);
+
+      eventOffers.forEach((offerId) => {
+        if (offersById.has(offerId)) {
+          offersById.get(offerId).isActive = true;
+        }
+      });
+    });
+  }
+
+  constructor() {
+    this.#updateOffersActivity();
   }
 
   #getOfferById(type, id) {
-    const offersById = this.#offersMap.get(type);
-    const offer = offersById.get(id);
-    const { title, price } = offer;
-    return { id, title, price };
+    const offer = this.#clonedOffersMap.get(type)?.get(id);
+    return offer ? { id, ...offer } : null;
   }
 
   #createUserEvents() {
-    const destinationsMap = new Map(this.#destinationsList.map((destination) => [destination.id, destination]));
+    const destinationsMap = new Map(this.#destinationsList.map(({ id, ...rest }) => [id, rest]));
 
-    const mergedEvents = this.#eventsList.map((event) => {
+    return Array.from(this.#eventsList.map((event) => {
       const destinationData = destinationsMap.get(event.destination);
-
-      const offersData = event.offers
-        .map((offerId) => this.#getOfferById(event.type, offerId))
-        .filter(Boolean);
+      const offersMap = new Map(event.offers.map((offerId) => {
+        const offer = this.#getOfferById(event.type, offerId);
+        return offer ? [offer.id, offer] : null;
+      }).filter(Boolean));
 
       return {
         ...event,
         destination: {
           id: destinationData.id,
-          name: destinationData.name,
-          description: destinationData.description,
-          pictures: destinationData.pictures,
+          ...destinationData
         },
-        offers: offersData
+        offers: offersMap
       };
-    });
-
-    return Array.from(new Map(mergedEvents.map((event) => [event.id, event])).values());
+    }).reduce((acc, event) => {
+      acc.set(event.id, event);
+      return acc;
+    }, new Map()).values());
   }
 
-  get userEvents() {
-    return structuredClone(this.#createUserEvents());
+  get userEvents () {
+    return this.#createUserEvents();
   }
 
-  get destinationsList() {
+  get destinationsList () {
     return this.#destinationsList;
   }
+
+  get offersMap () {
+    return this.#offersMap;
+  }
+
 }

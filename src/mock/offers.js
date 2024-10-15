@@ -2,7 +2,7 @@ import { getRandomNumber } from '../utils/common';
 import { nanoid } from 'nanoid';
 import { EVENTS_TYPES } from '../const';
 
-const OFFERS_COUNT = 2;
+const OFFERS_COUNT = 3;
 
 const getRandomOffer = (index) => {
   const offer = {

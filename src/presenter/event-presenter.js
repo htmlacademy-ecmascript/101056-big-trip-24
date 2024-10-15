@@ -14,6 +14,7 @@ export default class EventPresenter {
   #handleModeChange = null;
   #findDestinationData = null;
   #getDestinationsList = null;
+  #getOffersMapByType = null;
 
   #eventComponent = null;
   #eventEditComponent = null;
@@ -21,12 +22,13 @@ export default class EventPresenter {
   #eventItem = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({container, onDataChange, onModeChange, findDestinationData, getDestinationsList}) {
+  constructor ({container, onDataChange, onModeChange, findDestinationData, getDestinationsList, getOffersMapByType}) {
     this.#container = container;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
     this.#findDestinationData = findDestinationData;
     this.#getDestinationsList = getDestinationsList;
+    this.#getOffersMapByType = getOffersMapByType;
   }
 
   init (eventItem) {
@@ -45,6 +47,7 @@ export default class EventPresenter {
       onClick: this.#handleSaveClick,
       findDestination: this.#findDestinationData,
       getDestinationsData: this.#getDestinationsList,
+      getOffersMapByType: this.#getOffersMapByType,
     });
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
