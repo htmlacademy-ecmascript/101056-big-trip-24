@@ -1,4 +1,4 @@
-import { render } from '../framework/render.js';
+import { render, remove } from '../framework/render.js';
 import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
@@ -12,6 +12,7 @@ export default class BoardPresenter {
   #eventsModel = null;
 
   #sortComponent = null;
+  #noEventComponent = new NoEventsView();
   #eventsListComponent = new NewEventsListView();
 
   #eventPresenters = new Map();
@@ -42,7 +43,6 @@ export default class BoardPresenter {
 
   init () {
     this.#renderBoard();
-    this.#renderSort();
   }
 
   #renderEvent(inputUserEvent) {
@@ -59,7 +59,7 @@ export default class BoardPresenter {
   }
 
   #renderNoEvents() {
-    render (new NoEventsView(), this.#container);
+    render (this.#noEventComponent, this.#container);
   }
 
   #handleSortTypeChange = (sortType) => {
@@ -69,12 +69,13 @@ export default class BoardPresenter {
 
     this.#currentSortType = sortType;
 
-    this.#clearEventList();
+    this.#clearBoard();
     this.#renderBoard();
   };
 
   #renderSort() {
     this.#sortComponent = new NewTripSortView({
+      currentSortType: this.#currentSortType,
       onSortTypeChange: this.#handleSortTypeChange
     });
 
@@ -92,27 +93,26 @@ export default class BoardPresenter {
     for (let i = 0; i < this.eventsList.length; i++) {
       this.#renderEvent(this.eventsList[i]);
     }
+    this.#renderSort();
   }
-
-  // #handleEventChange = (updatedEvent) => {
-  //   this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
-  // };
 
   #handleModeChange = () => {
     this.#eventPresenters.forEach((presenter) => presenter.resetView());
   };
 
-  #clearEventList() {
+  #clearBoard({resetSortType = false} = {}) {
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
+
+    remove(this.#sortComponent);
+    remove(this.#noEventComponent);
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DEFAULT;
+    }
   }
 
   #handleViewAction = (actionType, updateType, update) => {
-    console.log(actionType, updateType, update);
-    // Здесь будем вызывать обновление модели.
-    // actionType - действие пользователя, нужно чтобы понять, какой метод модели вызвать
-    // updateType - тип изменений, нужно чтобы понять, что после нужно обновить
-    // update - обновленные данные
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
         this.#eventsModel.updateEvent(updateType, update);
@@ -127,21 +127,17 @@ export default class BoardPresenter {
   };
 
   #handleModelEvent = (updateType, data) => {
-    console.log(updateType, data);
-    // В зависимости от типа изменений решаем, что делать:
-    // - обновить часть списка (например, когда поменялось описание)
-    // - обновить список (например, когда задача ушла в архив)
-    // - обновить всю доску (например, при переключении фильтра)
     switch (updateType) {
       case UpdateType.PATCH:
-        // - обновить часть списка (например, когда поменялось описание)
         this.#eventsModel.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
-        // - обновить список (например, когда задача ушла в архив)
+        this.#clearBoard();
+        this.#renderBoard();
         break;
       case UpdateType.MAJOR:
-        // - обновить всю доску (например, при переключении фильтра)
+        this.#clearBoard({resetSortType: true});
+        this.#renderBoard();
         break;
     }
   };
