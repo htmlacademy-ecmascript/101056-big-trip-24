@@ -1,5 +1,4 @@
 import { render } from '../framework/render.js';
-import { updateItem } from '../utils/common.js';
 import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
@@ -15,10 +14,8 @@ export default class BoardPresenter {
   #sortComponent = null;
   #eventsListComponent = new NewEventsListView();
 
-  #eventsList = [];
   #eventPresenters = new Map();
   #currentSortType = SortType.DEFAULT;
-  #sourcedBoardEvents = [];
   #findDestinationData = null;
   #destinationsData = null;
   #getOffersMapByType = null;
@@ -31,9 +28,17 @@ export default class BoardPresenter {
     this.#getOffersMapByType = this.#eventsModel.getOffersMapByType;
   }
 
+  get eventsList () {
+    switch (this.#currentSortType) {
+      case SortType.PRICE:
+        return [...this.#eventsModel.userEvents].sort(sortEventsPrice);
+      case SortType.TIME:
+        return [...this.#eventsModel.userEvents].sort(sortEventsTime);
+    }
+    return this.#eventsModel.userEvents;
+  }
+
   init () {
-    this.#eventsList = [...this.#eventsModel.userEvents];
-    this.#sourcedBoardEvents = [...this.#eventsModel.userEvents];
     this.#renderBoard();
     this.#renderSort();
   }
@@ -55,27 +60,12 @@ export default class BoardPresenter {
     render (new NoEventsView(), this.#container);
   }
 
-  #sortEvents(sortType) {
-    switch (sortType) {
-      case SortType.PRICE:
-        this.#eventsList.sort(sortEventsPrice);
-        break;
-      case SortType.TIME:
-        this.#eventsList.sort(sortEventsTime);
-        break;
-      default:
-        this.#eventsList = [...this.#sourcedBoardEvents];
-    }
-
-    this.#currentSortType = sortType;
-  }
-
   #handleSortTypeChange = (sortType) => {
     if (sortType === undefined || this.#currentSortType === sortType) {
       return;
     }
 
-    this.#sortEvents(sortType);
+    this.#currentSortType = sortType;
 
     this.#clearEventList();
     this.#renderBoard();
@@ -90,21 +80,19 @@ export default class BoardPresenter {
   }
 
   #renderBoard () {
-    if (this.#eventsList.length === 0) {
+    if (this.eventsList.length === 0) {
       this.#renderNoEvents();
       return;
     }
 
     render(this.#eventsListComponent, this.#container);
 
-    for (let i = 0; i < this.#eventsList.length; i++) {
-      this.#renderEvent(this.#eventsList[i]);
+    for (let i = 0; i < this.eventsList.length; i++) {
+      this.#renderEvent(this.eventsList[i]);
     }
   }
 
   #handleEventChange = (updatedEvent) => {
-    this.#eventsList = updateItem(this.#eventsList, updatedEvent);
-    this.#sourcedBoardEvents = updateItem(this.#sourcedBoardEvents, updatedEvent);
     this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
   };
 

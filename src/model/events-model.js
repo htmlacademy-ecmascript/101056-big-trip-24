@@ -1,6 +1,7 @@
 import EventsConnector from './events-connector';
+import Observable from '../framework/observable.js';
 
-export default class EventsModel {
+export default class EventsModel extends Observable {
   #EventsConnector = new EventsConnector;
   #eventsList = this.#EventsConnector.userEvents;
   #destinationsData = this.#EventsConnector.destinationsData;
