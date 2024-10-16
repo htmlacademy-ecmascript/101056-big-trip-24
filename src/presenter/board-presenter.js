@@ -3,7 +3,7 @@ import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
-import { SortType } from '../const.js';
+import { SortType, UpdateType, UserAction } from '../const.js';
 import { sortEventsPrice, sortEventsTime } from '../utils/event.js';
 
 
@@ -26,6 +26,8 @@ export default class BoardPresenter {
     this.#findDestinationData = this.#eventsModel.findDestinationData;
     this.#destinationsData = this.#eventsModel.destinationsData;
     this.#getOffersMapByType = this.#eventsModel.getOffersMapByType;
+
+    this.#eventsModel.addObserver(this.#handleModelEvent);
   }
 
   get eventsList () {
@@ -46,7 +48,7 @@ export default class BoardPresenter {
   #renderEvent(inputUserEvent) {
     const eventPresenter = new EventPresenter({
       container: this.#eventsListComponent.element,
-      onDataChange: this.#handleEventChange,
+      onDataChange: this.#handleViewAction,
       onModeChange: this.#handleModeChange,
       findDestinationData: this.#findDestinationData,
       destinationsData: this.#destinationsData,
@@ -92,9 +94,9 @@ export default class BoardPresenter {
     }
   }
 
-  #handleEventChange = (updatedEvent) => {
-    this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
-  };
+  // #handleEventChange = (updatedEvent) => {
+  //   this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
+  // };
 
   #handleModeChange = () => {
     this.#eventPresenters.forEach((presenter) => presenter.resetView());
@@ -104,5 +106,44 @@ export default class BoardPresenter {
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
   }
+
+  #handleViewAction = (actionType, updateType, update) => {
+    console.log(actionType, updateType, update);
+    // Здесь будем вызывать обновление модели.
+    // actionType - действие пользователя, нужно чтобы понять, какой метод модели вызвать
+    // updateType - тип изменений, нужно чтобы понять, что после нужно обновить
+    // update - обновленные данные
+    switch (actionType) {
+      case UserAction.UPDATE_EVENT:
+        this.#eventsModel.updateEvent(updateType, update);
+        break;
+      case UserAction.ADD_EVENT:
+        this.#eventsModel.addEvent(updateType, update);
+        break;
+      case UserAction.DELETE_EVENT:
+        this.#eventsModel.deleteEvent(updateType, update);
+        break;
+    }
+  };
+
+  #handleModelEvent = (updateType, data) => {
+    console.log(updateType, data);
+    // В зависимости от типа изменений решаем, что делать:
+    // - обновить часть списка (например, когда поменялось описание)
+    // - обновить список (например, когда задача ушла в архив)
+    // - обновить всю доску (например, при переключении фильтра)
+    switch (updateType) {
+      case UpdateType.PATCH:
+        // - обновить часть списка (например, когда поменялось описание)
+        this.#eventsModel.get(data.id).init(data);
+        break;
+      case UpdateType.MINOR:
+        // - обновить список (например, когда задача ушла в архив)
+        break;
+      case UpdateType.MAJOR:
+        // - обновить всю доску (например, при переключении фильтра)
+        break;
+    }
+  };
 
 }

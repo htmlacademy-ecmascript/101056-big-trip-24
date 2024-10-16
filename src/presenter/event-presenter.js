@@ -2,6 +2,7 @@ import { render, replace, remove } from '../framework/render.js';
 import { isEscapeKey } from '../utils/common.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
+import { UserAction, UpdateType } from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -102,11 +103,19 @@ export default class EventPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#eventItem, isFavorite: !this.#eventItem.isFavorite});
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...this.#eventItem, isFavorite: !this.#eventItem.isFavorite}
+    );
   };
 
   #handleSaveClick = (eventItem) => {
-    this.#handleDataChange(eventItem);
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      eventItem,
+    );
     this.#replaceEditFormToEventCard();
   };
 

@@ -294,7 +294,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     evt.preventDefault();
 
     const offerId = evt.currentTarget.dataset.offerId;
-    const offers = new Map (this._state.offers);
+    const offers = this._state.offers;
 
     if (offers.has(offerId)) {
       const offer = offers.get(offerId);
