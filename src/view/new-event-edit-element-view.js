@@ -128,6 +128,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList) => {
 export default class NewEventEditElementView extends AbstractStatefulView {
   #eventData = null;
   #handleClick = null;
+  #handleDeleteClick = null;
   #rollupButton = null;
   #destinationsData = null;
   #findDestinationData = null;
@@ -137,7 +138,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, findDestinationData, destinationsData, getOffersMapByType, onSubmit}) {
+  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, destinationsData, getOffersMapByType}) {
     super();
     this.#eventData = userEvent;
     this.#findDestinationData = findDestinationData;
@@ -146,6 +147,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
+    this.#handleDeleteClick = onDeleteClick;
     this.#handleSubmit = onSubmit;
 
     this._restoreHandlers();
@@ -177,6 +179,9 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.#formElement.addEventListener('submit', this.#submitHandler);
     this.#rollupButton.addEventListener('click', this.#clickHandler);
 
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this.#deleteHandler);
+
     this.element.querySelector('#event-price-1')
       .addEventListener('input', this.#eventPriceToggleHandler);
     this.element.querySelector('.event__input--destination')
@@ -201,7 +206,12 @@ export default class NewEventEditElementView extends AbstractStatefulView {
 
   #submitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleClick(NewEventEditElementView.parseStateToEventData(this._state));
+    this.#handleSubmit(NewEventEditElementView.parseStateToEventData(this._state));
+  };
+
+  #deleteHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(NewEventEditElementView.parseStateToEventData(this._state));
   };
 
   removeEventListeners() {

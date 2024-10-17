@@ -14,6 +14,8 @@ const isEventPresent = (dateFrom, dateTo) => {
 
 const isEventPast = (dateTo) => dateTo && dayjs().isAfter(dateTo, 'D');
 
+const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
+
 const sortEventsPrice = (eventA, eventB) => eventB.basePrice - eventA.basePrice;
 
 const sortEventsTime = (eventA, eventB) => {
@@ -33,6 +35,7 @@ export {
   isEventFuture,
   isEventPresent,
   isEventPast,
+  isDatesEqual,
   sortEventsPrice,
   sortEventsTime
 };
