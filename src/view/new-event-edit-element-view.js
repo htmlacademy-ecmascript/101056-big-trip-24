@@ -24,6 +24,19 @@ const createOffers = (offersMap) => {
   return offersHTML;
 };
 
+const createOffersContainer = (offersMap) => {
+  if (!offersMap) {
+    return '';
+  }
+  return `<section class="event__section  event__section--offers">
+                    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+                    <div class="event__available-offers">
+                    ${createOffers(offersMap)}
+                    </div>
+                  </section>`;
+};
+
 const createType = (type) => {
   const typeToLowerCase = type.toLowerCase();
   return `<div class="event__type-item">
@@ -52,6 +65,16 @@ const createDestinations = (destinationsList) => {
     destinationsHTML += createDestination(destination);
   });
   return destinationsHTML;
+};
+
+const createDestinationDescription = (description) => {
+  if (!description) {
+    return '';
+  }
+  return `<section class="event__section  event__section--destination">
+                    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+                    <p class="event__destination-description">${description}</p>
+                  </section>`;
 };
 
 const createNewEventEditElementTemplate = (eventData, destinationsList) => {
@@ -108,18 +131,8 @@ const createNewEventEditElementTemplate = (eventData, destinationsList) => {
                   </button>
                 </header>
                 <section class="event__details">
-                  <section class="event__section  event__section--offers">
-                    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-                    <div class="event__available-offers">
-                    ${createOffers(offers)}
-                    </div>
-                  </section>
-
-                  <section class="event__section  event__section--destination">
-                    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${destination.description}</p>
-                  </section>
+                    ${createOffersContainer(offers)}
+                    ${createDestinationDescription(destination.description)}
                 </section>
               </form>
             </li>`;

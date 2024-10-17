@@ -3,7 +3,7 @@ import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
-import { SortType, UpdateType, UserAction } from '../const.js';
+import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
 import { sortEventsPrice, sortEventsTime } from '../utils/event.js';
 import { filter } from '../utils/filter.js';
 
@@ -14,11 +14,12 @@ export default class BoardPresenter {
   #filterModel = null;
 
   #sortComponent = null;
-  #noEventComponent = new NoEventsView();
+  #noEventComponent = null;
   #eventsListComponent = new NewEventsListView();
 
   #eventPresenters = new Map();
   #currentSortType = SortType.DEFAULT;
+  #filterType = FilterType.EVERYTHING;
   #findDestinationData = null;
   #destinationsData = null;
   #getOffersMapByType = null;
@@ -36,9 +37,9 @@ export default class BoardPresenter {
   }
 
   get eventsList () {
-    const filterType = this.#filterModel.filter;
+    this.#filterType = this.#filterModel.filter;
     const userEvents = this.#eventsModel.userEvents;
-    const filteredEvents = filter[filterType](userEvents);
+    const filteredEvents = filter[this.#filterType](userEvents);
 
     switch (this.#currentSortType) {
       case SortType.PRICE:
@@ -67,6 +68,9 @@ export default class BoardPresenter {
   }
 
   #renderNoEvents() {
+    this.#noEventComponent = new NoEventsView({
+      filterType: this.#filterType
+    });
     render (this.#noEventComponent, this.#container);
   }
 
@@ -113,7 +117,9 @@ export default class BoardPresenter {
     this.#eventPresenters.clear();
 
     remove(this.#sortComponent);
-    remove(this.#noEventComponent);
+    if (this.#noEventComponent) {
+      remove(this.#noEventComponent);
+    }
 
     if (resetSortType) {
       this.#currentSortType = SortType.DEFAULT;
