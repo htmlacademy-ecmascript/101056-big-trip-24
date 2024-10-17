@@ -14,7 +14,8 @@ const eventsModel = new EventsModel();
 const filterModel = new FilterModel();
 const boardPresenter = new BoardPresenter({
   container: tripEventsContainer,
-  eventsModel
+  eventsModel,
+  filterModel,
 });
 const filterPresenter = new FilterPresenter({
   filterContainer: tripFiltersContainer,
