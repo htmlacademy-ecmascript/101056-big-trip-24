@@ -29,6 +29,8 @@ const sortEventsTime = (eventA, eventB) => {
   return durationB - durationA;
 };
 
+const sortEventsDate = (eventA, eventB) => new Date(eventA.dateFrom) - new Date(eventB.dateFrom);
+
 export {
   humanizeDueDate,
   isEventFuture,
@@ -36,5 +38,6 @@ export {
   isEventPast,
   isDatesEqual,
   sortEventsPrice,
-  sortEventsTime
+  sortEventsTime,
+  sortEventsDate
 };

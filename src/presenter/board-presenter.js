@@ -5,7 +5,7 @@ import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
 import NewEventPresenter from './new-event-presenter.js';
 import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
-import { sortEventsPrice, sortEventsTime } from '../utils/event.js';
+import { sortEventsPrice, sortEventsTime, sortEventsDate } from '../utils/event.js';
 import { filter } from '../utils/filter.js';
 
 
@@ -61,7 +61,7 @@ export default class BoardPresenter {
       case SortType.TIME:
         return filteredEvents.sort(sortEventsTime);
     }
-    return filteredEvents;
+    return filteredEvents.sort(sortEventsDate);
   }
 
   init () {

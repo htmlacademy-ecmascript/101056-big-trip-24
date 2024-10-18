@@ -3,9 +3,9 @@ import { FilterType } from '../const.js';
 
 const NoTasksTextType = {
   [FilterType.EVERYTHING]: 'Click New Event to create your first point',
-  [FilterType.FUTURE]: 'There are no future events',
-  [FilterType.PRESENT]: 'There are no present events',
-  [FilterType.PAST]: 'There are no past events',
+  [FilterType.FUTURE]: 'There are no future events now',
+  [FilterType.PRESENT]: 'There are no present events now',
+  [FilterType.PAST]: 'There are no past events now',
 };
 
 const createNoEventsViewTemplate = (filterType) => {
