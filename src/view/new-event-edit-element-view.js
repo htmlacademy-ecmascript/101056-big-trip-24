@@ -1,3 +1,4 @@
+import he from 'he';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { EVENTS_TYPES } from '../const';
 import flatpickr from 'flatpickr';
@@ -111,7 +112,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" value="${destination.name === undefined ? '' : destination.name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" value="${destination.name === undefined ? '' : he.encode(destination.name)}" list="destination-list-1">
                     <datalist id="destination-list-1">
                     ${createDestinations(destinationsList)}
                     </datalist>
@@ -130,7 +131,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
