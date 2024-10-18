@@ -2,6 +2,8 @@ import { render, replace, remove } from '../framework/render.js';
 import { isEscapeKey } from '../utils/common.js';
 import NewEventsItemView from '../view/new-events-item-view.js';
 import NewEventEditElementView from '../view/new-event-edit-element-view.js';
+import { UserAction, UpdateType } from '../const.js';
+import {isEventFuture, isEventPresent, isEventPast, isDatesEqual} from '../utils/event.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -44,10 +46,13 @@ export default class EventPresenter {
     });
     this.#eventEditComponent = new NewEventEditElementView({
       userEvent: this.#eventItem,
-      onClick: this.#handleSaveClick,
+      onClick: this.#handleOpenEventClick,
+      onSubmit: this.#handleFormSubmit,
+      onDeleteClick: this.#handleDeleteClick,
       findDestinationData: this.#findDestinationData,
       destinationsData: this.#destinationsData,
       getOffersMapByType: this.#getOffersMapByType,
+
     });
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
@@ -101,12 +106,45 @@ export default class EventPresenter {
     this.#replaceEventCardToEditForm();
   };
 
-  #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#eventItem, isFavorite: !this.#eventItem.isFavorite});
+  #handleDeleteClick = (event) => {
+    this.#handleDataChange(
+      UserAction.DELETE_EVENT,
+      UpdateType.MINOR,
+      event,
+    );
   };
 
-  #handleSaveClick = (eventItem) => {
-    this.#handleDataChange(eventItem);
+  #handleFavoriteClick = () => {
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...this.#eventItem, isFavorite: !this.#eventItem.isFavorite}
+    );
+  };
+
+  #handleOpenEventClick = (eventItem) => {
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      eventItem,
+    );
+    this.#replaceEditFormToEventCard();
+  };
+
+  #handleFormSubmit = (update) => {
+
+    const isMinorUpdate =
+        !isDatesEqual(this.#eventItem.dateFrom, update.dateFrom) ||
+        !isDatesEqual(this.#eventItem.dateTo, update.dateTo) ||
+        isEventFuture(update.dateFrom) !== isEventFuture(this.#eventItem.dateFrom) ||
+        isEventPresent(update.dateFrom, update.dateTo) !== isEventPresent(this.#eventItem.dateFrom, this.#eventItem.dateTo) ||
+        isEventPast(update.dateTo) !== isEventPast(this.#eventItem.dateTo);
+
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
     this.#replaceEditFormToEventCard();
   };
 

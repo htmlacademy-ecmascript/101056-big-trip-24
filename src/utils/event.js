@@ -2,17 +2,18 @@ import dayjs from 'dayjs';
 
 const humanizeDueDate = (dueDate, dateFormat) => dueDate ? dayjs(dueDate).format(dateFormat) : '';
 
-const isEventFuture = (dateFrom) => dateFrom && dayjs().isAfter(dateFrom, 'D');
+const isEventFuture = (dateFrom) => dateFrom && dayjs().isBefore(dateFrom, 'D');
 
 const isEventPresent = (dateFrom, dateTo) => {
   const now = dayjs();
   return dateFrom && dateTo &&
-  now.isAfter(dateFrom, 'D') &&
-  now.isBefore(dateTo, 'D') ||
-  now.isSame(dateTo, 'D');
+         (now.isAfter(dateFrom, 'D') || now.isSame(dateFrom, 'D')) &&
+         (now.isBefore(dateTo, 'D') || now.isSame(dateTo, 'D'));
 };
 
 const isEventPast = (dateTo) => dateTo && dayjs().isAfter(dateTo, 'D');
+
+const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
 
 const sortEventsPrice = (eventA, eventB) => eventB.basePrice - eventA.basePrice;
 
@@ -33,6 +34,7 @@ export {
   isEventFuture,
   isEventPresent,
   isEventPast,
+  isDatesEqual,
   sortEventsPrice,
   sortEventsTime
 };
