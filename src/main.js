@@ -4,6 +4,7 @@ import FilterModel from './model/filter-model.js';
 import NewTripInfoView from './view/new-trip-info-view.js';
 import BoardPresenter from './presenter/board-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
+import NewAddEventButtonView from './view/new-add-event-button-view.js';
 
 
 const tripMainContainer = document.querySelector('.trip-main');
@@ -16,6 +17,7 @@ const boardPresenter = new BoardPresenter({
   container: tripEventsContainer,
   eventsModel,
   filterModel,
+  onNewEventDestroy: handleNewEventFormClose,
 });
 const filterPresenter = new FilterPresenter({
   filterContainer: tripFiltersContainer,
@@ -23,8 +25,22 @@ const filterPresenter = new FilterPresenter({
   eventsModel
 });
 
+const newEventButtonComponent = new NewAddEventButtonView({
+  onClick: handleNewEventButtonClick
+});
+
+function handleNewEventFormClose() {
+  newEventButtonComponent.element.disabled = false;
+}
+
+function handleNewEventButtonClick() {
+  boardPresenter.createEvent();
+  newEventButtonComponent.element.disabled = true;
+}
+
 
 render (new NewTripInfoView(), tripMainContainer, 'AFTERBEGIN');
+render(newEventButtonComponent, tripMainContainer);
 
 filterPresenter.init();
 boardPresenter.init();

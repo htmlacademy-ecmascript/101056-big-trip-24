@@ -11,8 +11,27 @@ export default class EventsModel extends Observable {
     return this.#eventsList;
   }
 
-  get destinationsData() {
+  get destinationsData () {
     return this.#destinationsData;
+  }
+
+  #generateDefaultEvent = () => {
+    const defaultType = 'flight';
+    const defaultOffers = this.getOffersMapByType(defaultType);
+    return {
+      id: '',
+      basePrice: 0,
+      dateFrom: '',
+      dateTo: '',
+      destination: {},
+      isFavorite: false,
+      offers: defaultOffers,
+      type: defaultType,
+    };
+  };
+
+  get defaultEvent () {
+    return this.#generateDefaultEvent();
   }
 
   findDestinationData = (destinationId) => this.#destinationsData.find((destination) => destination.id === destinationId);

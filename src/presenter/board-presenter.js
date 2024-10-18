@@ -3,6 +3,7 @@ import NewTripSortView from '../view/new-sort-container-view.js';
 import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
+import NewEventPresenter from './new-event-presenter.js';
 import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
 import { sortEventsPrice, sortEventsTime } from '../utils/event.js';
 import { filter } from '../utils/filter.js';
@@ -18,19 +19,32 @@ export default class BoardPresenter {
   #eventsListComponent = new NewEventsListView();
 
   #eventPresenters = new Map();
+  #newEventPresenter = null;
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
   #findDestinationData = null;
   #destinationsData = null;
   #getOffersMapByType = null;
+  #defaultEvent = null;
 
-  constructor ({container, filterModel, eventsModel}) {
+  constructor ({container, filterModel, eventsModel, onNewEventDestroy}) {
     this.#container = container;
     this.#eventsModel = eventsModel;
     this.#filterModel = filterModel;
     this.#findDestinationData = this.#eventsModel.findDestinationData;
     this.#destinationsData = this.#eventsModel.destinationsData;
     this.#getOffersMapByType = this.#eventsModel.getOffersMapByType;
+    this.#defaultEvent = this.#eventsModel.defaultEvent;
+
+    this.#newEventPresenter = new NewEventPresenter({
+      eventListContainer: this.#eventsListComponent.element,
+      onDataChange: this.#handleViewAction,
+      onDestroy: onNewEventDestroy,
+      findDestinationData: this.#findDestinationData,
+      destinationsData: this.#destinationsData,
+      getOffersMapByType: this.#getOffersMapByType,
+      userEvent: this.#defaultEvent,
+    });
 
     this.#eventsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -52,6 +66,12 @@ export default class BoardPresenter {
 
   init () {
     this.#renderBoard();
+  }
+
+  createEvent() {
+    this.#currentSortType = SortType.DEFAULT;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newEventPresenter.init();
   }
 
   #renderEvent(inputUserEvent) {
@@ -109,10 +129,12 @@ export default class BoardPresenter {
   }
 
   #handleModeChange = () => {
+    this.#newEventPresenter.destroy();
     this.#eventPresenters.forEach((presenter) => presenter.resetView());
   };
 
   #clearBoard({resetSortType = false} = {}) {
+    this.#newEventPresenter.destroy();
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
 

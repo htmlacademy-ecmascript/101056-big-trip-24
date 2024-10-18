@@ -25,7 +25,7 @@ const createOffers = (offersMap) => {
 };
 
 const createOffersContainer = (offersMap) => {
-  if (!offersMap) {
+  if (!offersMap.size > 0) {
     return '';
   }
   return `<section class="event__section  event__section--offers">
@@ -77,7 +77,16 @@ const createDestinationDescription = (description) => {
                   </section>`;
 };
 
-const createNewEventEditElementTemplate = (eventData, destinationsList) => {
+const createOpenEventButton = (isDefaultEvent) => {
+  if (isDefaultEvent) {
+    return '';
+  }
+  return `<button class="event__rollup-btn" type="button">
+                    <span class="visually-hidden">Open event</span>
+                  </button>`;
+};
+
+const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaultEvent) => {
   const {basePrice, type, offers, destination, dateFrom, dateTo} = eventData;
 
   return `<li class="trip-events__item">
@@ -102,7 +111,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList) => {
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="${destination.id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" value="${destination.name === undefined ? '' : destination.name}" list="destination-list-1">
                     <datalist id="destination-list-1">
                     ${createDestinations(destinationsList)}
                     </datalist>
@@ -126,9 +135,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList) => {
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
                   <button class="event__reset-btn" type="reset">Delete</button>
-                  <button class="event__rollup-btn" type="button">
-                    <span class="visually-hidden">Open event</span>
-                  </button>
+                  ${createOpenEventButton(isDefaultEvent)}
                 </header>
                 <section class="event__details">
                     ${createOffersContainer(offers)}
@@ -147,16 +154,18 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #findDestinationData = null;
   #getOffersMapByType = null;
   #datepicker = null;
+  #isDefaultEvent = null;
 
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, destinationsData, getOffersMapByType}) {
+  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, destinationsData, getOffersMapByType, isDefaultEvent}) {
     super();
     this.#eventData = userEvent;
     this.#findDestinationData = findDestinationData;
     this.#destinationsData = destinationsData;
     this.#getOffersMapByType = getOffersMapByType;
+    this.#isDefaultEvent = isDefaultEvent;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
@@ -168,7 +177,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   }
 
   get template () {
-    return createNewEventEditElementTemplate(this._state, this.#destinationsData);
+    return createNewEventEditElementTemplate(this._state, this.#destinationsData, this.#isDefaultEvent);
   }
 
   removeElement() {
@@ -190,7 +199,9 @@ export default class NewEventEditElementView extends AbstractStatefulView {
     this.#rollupButton = this.element.querySelector('.event__rollup-btn');
     this.#formElement = this.element.querySelector('.event--edit');
     this.#formElement.addEventListener('submit', this.#submitHandler);
-    this.#rollupButton.addEventListener('click', this.#clickHandler);
+    if (!this.#isDefaultEvent) {
+      this.#rollupButton.addEventListener('click', this.#clickHandler);
+    }
 
     this.element.querySelector('.event__reset-btn')
       .addEventListener('click', this.#deleteHandler);

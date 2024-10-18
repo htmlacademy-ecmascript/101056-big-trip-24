@@ -8,10 +8,10 @@ const NoTasksTextType = {
   [FilterType.PAST]: 'There are no past events',
 };
 
-function createNoEventsViewTemplate(filterType) {
+const createNoEventsViewTemplate = (filterType) => {
   const noEventTextValue = NoTasksTextType[filterType];
   return `<p class="trip-events__msg">${noEventTextValue}</p>`;
-}
+};
 
 export default class NoEventsView extends AbstractView {
   #filterType = null;
