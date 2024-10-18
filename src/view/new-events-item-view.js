@@ -35,7 +35,9 @@ const createNewOffer = (offer) => {
 const createOffers = (offers) => {
   let offersHTML = '';
   offers.forEach((offer) => {
-    offersHTML += createNewOffer(offer);
+    if (offer.isActive) {
+      offersHTML += createNewOffer(offer);
+    }
   });
   return offersHTML;
 };
