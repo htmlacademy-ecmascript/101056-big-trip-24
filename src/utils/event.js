@@ -14,9 +14,25 @@ const isEventPresent = (dateFrom, dateTo) => {
 
 const isEventPast = (dateTo) => dateTo && dayjs().isAfter(dateTo, 'D');
 
+const sortEventsPrice = (eventA, eventB) => eventB.basePrice - eventA.basePrice;
+
+const sortEventsTime = (eventA, eventB) => {
+  const dateFromA = dayjs(eventA.dateFrom);
+  const dateToA = dayjs(eventA.dateTo);
+  const dateFromB = dayjs(eventB.dateFrom);
+  const dateToB = dayjs(eventB.dateTo);
+
+  const durationA = dateToA.diff(dateFromA);
+  const durationB = dateToB.diff(dateFromB);
+
+  return durationB - durationA;
+};
+
 export {
   humanizeDueDate,
   isEventFuture,
   isEventPresent,
-  isEventPast
+  isEventPast,
+  sortEventsPrice,
+  sortEventsTime
 };

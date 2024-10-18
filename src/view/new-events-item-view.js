@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate } from '../utils/event';
 
-const TIME_PATTERN = 'hh:mm';
+const TIME_PATTERN = 'HH:mm';
 const HUMANIZED_EVENT_DATE_PATTERN = 'MMM DD';
 
 
@@ -90,13 +90,17 @@ export default class NewEventsItemView extends AbstractView {
   #eventData = null;
   #handleClick = null;
   #rollupButton = null;
+  #handleFavoriteClick = null;
 
-  constructor ({userEvent, onClick}) {
+  constructor ({userEvent, onClick, onFavoriteClick}) {
     super();
     this.#eventData = userEvent;
     this.#handleClick = onClick;
+    this.#handleFavoriteClick = onFavoriteClick;
     this.#rollupButton = this.element.querySelector('.event__rollup-btn');
     this.#rollupButton.addEventListener('click', this.#clickHandler);
+    this.element.querySelector('.event__favorite-icon')
+      .addEventListener('click', this.#favoriteClickHandler);
   }
 
   get template () {
@@ -111,5 +115,10 @@ export default class NewEventsItemView extends AbstractView {
   removeEventListeners() {
     this.#rollupButton.removeEventListener('click', this.#clickHandler);
   }
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFavoriteClick();
+  };
 
 }
