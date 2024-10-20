@@ -2,10 +2,24 @@ import EventsConnector from './events-connector';
 import Observable from '../framework/observable.js';
 
 export default class EventsModel extends Observable {
+  #eventsApiService = null;
   #EventsConnector = new EventsConnector;
   #eventsList = this.#EventsConnector.userEvents;
   #destinationsData = this.#EventsConnector.destinationsData;
   #offersMap = this.#EventsConnector.offersMap;
+
+  constructor({eventsApiService}) {
+    super();
+    this.#eventsApiService = eventsApiService;
+
+    this.#eventsApiService.userEvents.then((events) => {
+      console.log(events);
+      // Есть проблема: cтруктура объекта похожа, но некоторые ключи называются иначе,
+      // а ещё на сервере используется snake_case, а у нас camelCase.
+      // Можно, конечно, переписать часть нашего клиентского приложения, но зачем?
+      // Есть вариант получше - паттерн "Адаптер"
+    });
+  }
 
   get userEvents () {
     return this.#eventsList;
