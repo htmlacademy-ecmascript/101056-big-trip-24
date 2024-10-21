@@ -4,6 +4,7 @@ import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
 import NewEventPresenter from './new-event-presenter.js';
+import LoadingView from '../view/loading-view.js';
 import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
 import { sortEventsPrice, sortEventsTime, sortEventsDate } from '../utils/event.js';
 import { filter } from '../utils/filter.js';
@@ -14,6 +15,7 @@ export default class BoardPresenter {
   #eventsModel = null;
   #filterModel = null;
 
+  #loadingComponent = new LoadingView();
   #sortComponent = null;
   #noEventComponent = null;
   #eventsListComponent = new NewEventsListView();
@@ -22,6 +24,7 @@ export default class BoardPresenter {
   #newEventPresenter = null;
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
   #findDestinationData = null;
   #destinationsData = null;
   #getOffersMapByType = null;
@@ -32,22 +35,34 @@ export default class BoardPresenter {
     this.#eventsModel = eventsModel;
     this.#filterModel = filterModel;
     this.#findDestinationData = this.#eventsModel.findDestinationData;
-    this.#destinationsData = this.#eventsModel.destinationsData;
     this.#getOffersMapByType = this.#eventsModel.getOffersMapByType;
-    this.#defaultEvent = this.#eventsModel.defaultEvent;
 
     this.#newEventPresenter = new NewEventPresenter({
+      userEvent: this.#defaultEvent,
       eventListContainer: this.#eventsListComponent.element,
       onDataChange: this.#handleViewAction,
       onDestroy: onNewEventDestroy,
       findDestinationData: this.#findDestinationData,
       destinationsData: this.#destinationsData,
       getOffersMapByType: this.#getOffersMapByType,
-      userEvent: this.#defaultEvent,
     });
 
     this.#eventsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
+  }
+
+  #renderEvent(inputUserEvent) {
+    const destinationsData = this.#eventsModel.destinationsData;
+    const eventPresenter = new EventPresenter({
+      container: this.#eventsListComponent.element,
+      onDataChange: this.#handleViewAction,
+      onModeChange: this.#handleModeChange,
+      findDestinationData: this.#findDestinationData,
+      destinationsData: this.#destinationsData,
+      getOffersMapByType: this.#getOffersMapByType,
+    });
+    eventPresenter.init(inputUserEvent, destinationsData);
+    this.#eventPresenters.set(inputUserEvent.id, eventPresenter);
   }
 
   get eventsList () {
@@ -71,20 +86,9 @@ export default class BoardPresenter {
   createEvent() {
     this.#currentSortType = SortType.DEFAULT;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newEventPresenter.init();
-  }
-
-  #renderEvent(inputUserEvent) {
-    const eventPresenter = new EventPresenter({
-      container: this.#eventsListComponent.element,
-      onDataChange: this.#handleViewAction,
-      onModeChange: this.#handleModeChange,
-      findDestinationData: this.#findDestinationData,
-      destinationsData: this.#destinationsData,
-      getOffersMapByType: this.#getOffersMapByType,
-    });
-    eventPresenter.init(inputUserEvent);
-    this.#eventPresenters.set(inputUserEvent.id, eventPresenter);
+    const destinationsData = this.#eventsModel.destinationsData;
+    const defaultEvent = this.#eventsModel.defaultEvent;
+    this.#newEventPresenter.init(defaultEvent, destinationsData);
   }
 
   #renderNoEvents() {
@@ -115,6 +119,11 @@ export default class BoardPresenter {
   }
 
   #renderBoard () {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (this.eventsList.length === 0) {
       this.#renderNoEvents();
       return;
@@ -139,6 +148,7 @@ export default class BoardPresenter {
     this.#eventPresenters.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     if (this.#noEventComponent) {
       remove(this.#noEventComponent);
     }
@@ -175,7 +185,16 @@ export default class BoardPresenter {
         this.#clearBoard({resetSortType: true});
         this.#renderBoard();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
     }
   };
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
 
 }

@@ -60,7 +60,10 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
+
+const DEFAULT_TYPE = 'flight';
 
 export {
   EVENTS_TYPES,
@@ -69,5 +72,6 @@ export {
   FilterType,
   SortType,
   UserAction,
-  UpdateType
+  UpdateType,
+  DEFAULT_TYPE
 };

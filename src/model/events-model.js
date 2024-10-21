@@ -1,25 +1,45 @@
-import EventsConnector from './events-connector';
 import Observable from '../framework/observable.js';
+import EventsConnector from './events-connector.js';
+import { UpdateType } from '../const.js';
 
 export default class EventsModel extends Observable {
   #eventsApiService = null;
-  #EventsConnector = new EventsConnector;
-  #eventsList = this.#EventsConnector.userEvents;
-  #destinationsData = this.#EventsConnector.destinationsData;
-  #offersMap = this.#EventsConnector.offersMap;
+  #eventsConnector = null;
+  #eventsList = [];
+  #destinationsData = [];
+  #offersMap = new Map();
+  #defaultEvent = null;
 
-  constructor({eventsApiService}) {
+  constructor({ eventsApiService }) {
     super();
     this.#eventsApiService = eventsApiService;
-
-    this.#eventsApiService.userEvents.then((events) => {
-      console.log(events);
-      // Есть проблема: cтруктура объекта похожа, но некоторые ключи называются иначе,
-      // а ещё на сервере используется snake_case, а у нас camelCase.
-      // Можно, конечно, переписать часть нашего клиентского приложения, но зачем?
-      // Есть вариант получше - паттерн "Адаптер"
-    });
+    this.#offersMap = new Map();
+    this.#destinationsData = [];
+    this.#eventsList = [];
   }
+
+  async init() {
+    try {
+      const destinations = await this.#eventsApiService.destinations;
+      const offers = await this.#eventsApiService.offers;
+      const userEvents = await this.#eventsApiService.userEvents;
+      this.#eventsConnector = new EventsConnector ();
+      this.#eventsConnector.init(destinations, offers, userEvents);
+      this.#destinationsData = this.#eventsConnector.destinationsData;
+      this.#eventsList = this.#eventsConnector.userEvents;
+      this.#offersMap = this.#eventsConnector.offersMap;
+      this.#defaultEvent = this.#eventsConnector.defaultEvent;
+    } catch (error) {
+      this.#offersMap = new Map();
+      this.#destinationsData = [];
+      this.#eventsList = [];
+    }
+    this._notify(UpdateType.INIT);
+  }
+
+  findDestinationData = (destinationId) => this.#destinationsData.find((destination) => destination.id === destinationId);
+
+  getOffersMapByType = (type) => this.#offersMap.get(type) || null;
 
   get userEvents () {
     return this.#eventsList;
@@ -29,28 +49,9 @@ export default class EventsModel extends Observable {
     return this.#destinationsData;
   }
 
-  #generateDefaultEvent = () => {
-    const defaultType = 'flight';
-    const defaultOffers = this.getOffersMapByType(defaultType);
-    return {
-      id: '',
-      basePrice: 0,
-      dateFrom: '',
-      dateTo: '',
-      destination: {},
-      isFavorite: false,
-      offers: defaultOffers,
-      type: defaultType,
-    };
-  };
-
   get defaultEvent () {
-    return this.#generateDefaultEvent();
+    return this.#defaultEvent;
   }
-
-  findDestinationData = (destinationId) => this.#destinationsData.find((destination) => destination.id === destinationId);
-
-  getOffersMapByType = (type) => this.#offersMap.get(type) || null;
 
   updateEvent(updateType, update) {
     const index = this.#eventsList.findIndex((event) => event.id === update.id);

@@ -6,16 +6,26 @@ const Method = {
 };
 
 export default class EventsApiService extends ApiService {
-  get userEvents() {
+  get userEvents () {
     return this._load({url: 'points'})
       .then(ApiService.parseResponse);
   }
 
-  async updateEvent(event) {
+  get destinations () {
+    return this._load({url: 'destinations'})
+      .then(ApiService.parseResponse);
+  }
+
+  get offers () {
+    return this._load({url: 'offers'})
+      .then(ApiService.parseResponse);
+  }
+
+  async updateEvent (event) {
     const response = await this._load({
       url: `points/${event.id}`,
       method: Method.PUT,
-      body: JSON.stringify(event),
+      body: JSON.stringify(this.#adaptToServer(event)),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
 
@@ -23,4 +33,22 @@ export default class EventsApiService extends ApiService {
 
     return parsedResponse;
   }
+
+  #adaptToServer (event) {
+    const offers = Object.entries(event.offers)
+      .filter(([,offer]) => offer.isActive)
+      .map(([id]) => id);
+
+    return {
+      'id': event.id,
+      'base_price': parseFloat(event.basePrice),
+      'date_from': event.dateFrom instanceof Date ? event.dateFrom.toISOString() : null,
+      'date_to': event.dateTo instanceof Date ? event.dateTo.toISOString() : null,
+      'destination': event.destination.id,
+      'is_favorite': event.isFavorite,
+      'offers': offers,
+      'type': event.type
+    };
+  }
+
 }

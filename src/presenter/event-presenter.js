@@ -24,18 +24,17 @@ export default class EventPresenter {
   #eventItem = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({container, onDataChange, onModeChange, findDestinationData, destinationsData, getOffersMapByType}) {
+  constructor ({container, onDataChange, onModeChange, findDestinationData, getOffersMapByType}) {
     this.#container = container;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
     this.#findDestinationData = findDestinationData;
-    this.#destinationsData = destinationsData;
     this.#getOffersMapByType = getOffersMapByType;
   }
 
-  init (eventItem) {
+  init (eventItem, destinationsData) {
     this.#eventItem = eventItem;
-
+    this.#destinationsData = destinationsData;
     const prevEventComponent = this.#eventComponent;
     const prevEventEditComponent = this.#eventEditComponent;
 
@@ -52,7 +51,7 @@ export default class EventPresenter {
       findDestinationData: this.#findDestinationData,
       destinationsData: this.#destinationsData,
       getOffersMapByType: this.#getOffersMapByType,
-
+      isDefaultEvent: this.isDefaultEvent,
     });
 
     if (prevEventComponent === null || prevEventEditComponent === null) {

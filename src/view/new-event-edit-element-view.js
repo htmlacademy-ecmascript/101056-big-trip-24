@@ -26,7 +26,7 @@ const createOffers = (offersMap) => {
 };
 
 const createOffersContainer = (offersMap) => {
-  if (!offersMap.size > 0) {
+  if (!offersMap) {
     return '';
   }
   return `<section class="event__section  event__section--offers">
@@ -160,13 +160,13 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, destinationsData, getOffersMapByType, isDefaultEvent}) {
+  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, getOffersMapByType, destinationsData, isDefaultEvent}) {
     super();
     this.#eventData = userEvent;
     this.#findDestinationData = findDestinationData;
     this.#destinationsData = destinationsData;
-    this.#getOffersMapByType = getOffersMapByType;
     this.#isDefaultEvent = isDefaultEvent;
+    this.#getOffersMapByType = getOffersMapByType;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;

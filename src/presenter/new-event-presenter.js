@@ -15,20 +15,20 @@ export default class NewEventPresenter {
 
   #eventEditComponent = null;
 
-  constructor({eventListContainer, onDataChange, onDestroy, findDestinationData, destinationsData, getOffersMapByType, userEvent}) {
+  constructor({eventListContainer, onDataChange, onDestroy, findDestinationData, getOffersMapByType}) {
     this.#eventListContainer = eventListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
     this.#findDestinationData = findDestinationData;
-    this.#destinationsData = destinationsData;
     this.#getOffersMapByType = getOffersMapByType;
-    this.#userEvent = userEvent;
   }
 
-  init() {
+  init(defaultEvent, destinationsData) {
     if (this.#eventEditComponent !== null) {
       return;
     }
+    this.#userEvent = defaultEvent;
+    this.#destinationsData = destinationsData;
 
     this.#eventEditComponent = new NewEventEditElementView({
       userEvent: this.#userEvent,
