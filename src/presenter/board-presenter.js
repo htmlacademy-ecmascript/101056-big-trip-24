@@ -30,6 +30,7 @@ export default class BoardPresenter {
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
   #isLoading = true;
+  #isLoadingDataError = false;
 
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
@@ -103,8 +104,10 @@ export default class BoardPresenter {
   }
 
   #renderNoEvents() {
+    this.#isLoadingDataError = this.#eventsModel.isLoadingDataError;
     this.#noEventComponent = new NoEventsView({
-      filterType: this.#filterType
+      filterType: this.#filterType,
+      isLoadingDataError: this.#isLoadingDataError,
     });
     render (this.#noEventComponent, this.#container);
   }

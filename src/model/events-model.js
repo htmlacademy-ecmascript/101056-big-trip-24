@@ -9,6 +9,7 @@ export default class EventsModel extends Observable {
   #destinationsData = [];
   #offersMap = new Map();
   #defaultEvent = null;
+  #isLoadingDataError = false;
 
   constructor({ eventsApiService }) {
     super();
@@ -33,6 +34,7 @@ export default class EventsModel extends Observable {
       this.#offersMap = new Map();
       this.#destinationsData = [];
       this.#eventsList = [];
+      this.#isLoadingDataError = true;
     }
     this._notify(UpdateType.INIT);
   }
@@ -40,6 +42,10 @@ export default class EventsModel extends Observable {
   findDestinationData = (destinationId) => this.#destinationsData.find((destination) => destination.id === destinationId);
 
   getOffersMapByType = (type) => this.#offersMap.get(type) || null;
+
+  get isLoadingDataError () {
+    return this.#isLoadingDataError;
+  }
 
   get userEvents () {
     return this.#eventsList;
