@@ -5,20 +5,25 @@ const DATE_PATTERN = 'DD MMM';
 
 const createNewTripInfoTemplate = (generalTravelInformation) =>{
   const {journeyDates, totalPrice, travelRoute} = generalTravelInformation;
+  let humanizedStartTime = '';
+  let humanizedEndTime = '';
+  let datesInfo = '';
 
-  const humanizedStartTime = humanizeDueDate(journeyDates.journeyStart, DATE_PATTERN);
-  const humanizedEndTime = humanizeDueDate(journeyDates.journeyEnd, DATE_PATTERN);
-  const datesInfo = `${ humanizedStartTime } - ${ humanizedEndTime }`;
+  if (travelRoute) {
+    humanizedStartTime = humanizeDueDate(journeyDates.journeyStart, DATE_PATTERN);
+    humanizedEndTime = humanizeDueDate(journeyDates.journeyEnd, DATE_PATTERN);
+    datesInfo = `${ humanizedStartTime } - ${ humanizedEndTime }`;
+  }
 
-  return `<section class="trip-main__trip-info  trip-info">
+  return `<section class="trip-main__trip-info trip-info">
             <div class="trip-info__main">
-              <h1 class="trip-info__title">${travelRoute}</h1>
+              <h1 class="trip-info__title">${travelRoute || ''}</h1>
 
-              <p class="trip-info__dates">${datesInfo}</p>
+              <p class="trip-info__dates">${datesInfo || ''}</p>
             </div>
 
             <p class="trip-info__cost">
-              Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalPrice}</span>
+              Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalPrice !== undefined ? totalPrice : '0'}</span>
             </p>
           </section>`;
 };

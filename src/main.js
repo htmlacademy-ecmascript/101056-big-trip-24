@@ -7,7 +7,7 @@ import NewAddEventButtonView from './view/new-add-event-button-view.js';
 import EventsApiService from './events-api-service.js';
 
 const AUTHORIZATION = 'Basic 357082111.1703690932';
-const END_POINT = 'https://23.objects.htmlacademy.pro/big-trip';
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 
 
 const tripMainContainer = document.querySelector('.trip-main');
