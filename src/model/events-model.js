@@ -53,20 +53,26 @@ export default class EventsModel extends Observable {
     return this.#defaultEvent;
   }
 
-  updateEvent(updateType, update) {
+  async updateEvent(updateType, update) {
     const index = this.#eventsList.findIndex((event) => event.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t update unexisting event');
     }
 
-    this.#eventsList = [
-      ...this.#eventsList.slice(0, index),
-      update,
-      ...this.#eventsList.slice(index + 1),
-    ];
+    try {
+      const response = await this.#eventsApiService.updateEvent(update);
+      const updatedTask = this.#adaptToClient(response);
 
-    this._notify(updateType, update);
+      this.#eventsList = [
+        ...this.#eventsList.slice(0, index),
+        updatedTask,
+        ...this.#eventsList.slice(index + 1),
+      ];
+      this._notify(updateType, updatedTask);
+    } catch(err) {
+      throw new Error(`Can't update task ${err}`);
+    }
   }
 
   addEvent(updateType, update) {
@@ -92,5 +98,45 @@ export default class EventsModel extends Observable {
 
     this._notify(updateType);
   }
+
+  #adaptToClient = (event) => {
+    const destinationsMap = new Map(this.destinationsData.map(({ id, ...rest }) => [id, rest]));
+    const destinationData = destinationsMap.get(event.destination);
+
+    let adaptedEvent = null;
+    const offersMap = structuredClone(this.getOffersMapByType(event.type));
+
+    adaptedEvent = {
+      ...event,
+      basePrice: event['base_price'],
+      dateFrom: event['date_from'],
+      dateTo: event['date_to'],
+      isFavorite: event['is_favorite'],
+      offersArray: event.offers,
+      newOffers: offersMap,
+    };
+
+    delete adaptedEvent['offers'];
+    delete adaptedEvent['base_price'];
+    delete adaptedEvent['date_from'];
+    delete adaptedEvent['date_to'];
+    delete adaptedEvent['is_favorite'];
+
+    adaptedEvent.offersArray.forEach((offerId) => {
+      const offer = offersMap.get(offerId);
+      offer.isActive = true;
+    });
+
+    adaptedEvent = {
+      ...adaptedEvent,
+      destination: { id: event.destination, ...destinationData },
+      offers: adaptedEvent.newOffers,
+    };
+
+    delete adaptedEvent['newOffers'];
+    delete adaptedEvent['offersArray'];
+
+    return adaptedEvent;
+  };
 
 }

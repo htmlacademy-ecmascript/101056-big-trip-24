@@ -34,16 +34,18 @@ export default class EventsApiService extends ApiService {
     return parsedResponse;
   }
 
-  #adaptToServer (event) {
-    const offers = Object.entries(event.offers)
-      .filter(([,offer]) => offer.isActive)
+  #adaptToServer(event) {
+    const dateFrom = new Date(event.dateFrom);
+    const dateTo = new Date(event.dateTo);
+    const offers = [...event.offers]
+      .filter(([, offer]) => offer.isActive)
       .map(([id]) => id);
 
     return {
       'id': event.id,
       'base_price': parseFloat(event.basePrice),
-      'date_from': event.dateFrom instanceof Date ? event.dateFrom.toISOString() : null,
-      'date_to': event.dateTo instanceof Date ? event.dateTo.toISOString() : null,
+      'date_from': dateFrom instanceof Date && !isNaN(dateFrom) ? dateFrom.toISOString() : null,
+      'date_to': dateTo instanceof Date && !isNaN(dateTo) ? dateTo.toISOString() : null,
       'destination': event.destination.id,
       'is_favorite': event.isFavorite,
       'offers': offers,
