@@ -26,7 +26,7 @@ const createOffers = (offersMap) => {
 };
 
 const createOffersContainer = (offersMap) => {
-  if (!offersMap) {
+  if (!offersMap || offersMap.size === 0) {
     return '';
   }
   return `<section class="event__section  event__section--offers">
@@ -68,14 +68,34 @@ const createDestinations = (destinationsList) => {
   return destinationsHTML;
 };
 
-const createDestinationDescription = (description) => {
+const createPhoto = (picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`;
+
+const createPhotos = (pictures) => {
+  let picturesHTML = '';
+  pictures.forEach((picture) => {
+    picturesHTML += createPhoto(picture);
+  });
+  return picturesHTML;
+};
+
+const createPhotoContainer = (pictures) => {
+  if (!pictures) {
+    return '';
+  }
+  return`<div class="event__photos-tape">
+                ${createPhotos(pictures)}
+                      </div>`;
+};
+
+const createDestinationDescription = (description, pictures) => {
   if (!description) {
     return '';
   }
   return `<section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                     <p class="event__destination-description">${description}</p>
-                  </section>`;
+                  </section>
+                  ${createPhotoContainer(pictures)}`;
 };
 
 const createOpenEventButton = (isDefaultEvent) => {
@@ -89,7 +109,20 @@ const createOpenEventButton = (isDefaultEvent) => {
 
 const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaultEvent) => {
   const {basePrice, type, offers, destination, dateFrom, dateTo, isDisabled, isSaving, isDeleting} = eventData;
-  const isSubmitDisabled = (!dateFrom || !dateTo || !destination.name || basePrice <= 0);
+
+  const basePriceNumber = Number(basePrice);
+  const isBasePriceInteger = Number.isInteger(basePriceNumber);
+  const isSubmitDisabled = (
+    !dateFrom ||
+    !dateTo ||
+    !destination.name ||
+    !destination.id ||
+    !isBasePriceInteger ||
+    (basePriceNumber <= 0)
+  );
+
+  const buttonDeleteValue = isDefaultEvent ? 'Cancel' : 'Delete';
+  const buttonDeleteProgressValue = isDefaultEvent ? 'Canceling...' : 'Deleting...';
 
   return `<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -136,12 +169,12 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
+                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? buttonDeleteProgressValue : buttonDeleteValue}</button>
                   ${createOpenEventButton(isDefaultEvent)}
                 </header>
                 <section class="event__details">
                     ${createOffersContainer(offers)}
-                    ${createDestinationDescription(destination.description)}
+                    ${createDestinationDescription(destination.description, destination.pictures)}
                 </section>
               </form>
             </li>`;
