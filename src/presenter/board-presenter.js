@@ -9,6 +9,7 @@ import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
 import { sortEventsPrice, sortEventsTime, sortEventsDate } from '../utils/event.js';
 import { filter } from '../utils/filter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import NewTripInfoView from '../view/new-trip-info-view.js';
 
 const TimeLimit = {
   LOWER_LIMIT: 350,
@@ -16,12 +17,14 @@ const TimeLimit = {
 };
 
 export default class BoardPresenter {
+  #mainContainer = null;
   #container = null;
   #eventsModel = null;
   #filterModel = null;
 
   #loadingComponent = new LoadingView();
   #sortComponent = null;
+  #mainComponent = null;
   #noEventComponent = null;
   #eventsListComponent = new NewEventsListView();
 
@@ -42,7 +45,8 @@ export default class BoardPresenter {
   #getOffersMapByType = null;
   #defaultEvent = null;
 
-  constructor ({container, filterModel, eventsModel, onNewEventDestroy}) {
+  constructor ({mainContainer, container, filterModel, eventsModel, onNewEventDestroy}) {
+    this.#mainContainer = mainContainer;
     this.#container = container;
     this.#eventsModel = eventsModel;
     this.#filterModel = filterModel;
@@ -132,6 +136,18 @@ export default class BoardPresenter {
     render(this.#sortComponent, this.#container, 'AFTERBEGIN');
   }
 
+  #renderTripMain () {
+    const generalTravelInformation = this.#eventsModel.generalTravelInformation;
+    this.#mainComponent = new NewTripInfoView({
+      generalTravelInformation: generalTravelInformation,
+    });
+    render (this.#mainComponent, this.#mainContainer, 'AFTERBEGIN');
+  }
+
+  #clearTripMain () {
+    remove(this.#mainComponent);
+  }
+
   #renderBoard () {
     if (this.#isLoading) {
       this.#renderLoading();
@@ -209,18 +225,25 @@ export default class BoardPresenter {
     switch (updateType) {
       case UpdateType.PATCH:
         this.#eventPresenters.get(data.id).init(data);
+        this.#clearTripMain();
+        this.#renderTripMain();
         break;
       case UpdateType.MINOR:
+        this.#clearTripMain();
+        this.#renderTripMain();
         this.#clearBoard();
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
+        this.#clearTripMain();
+        this.#renderTripMain();
         this.#clearBoard({resetSortType: true});
         this.#renderBoard();
         break;
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
+        this.#renderTripMain();
         this.#renderBoard();
         break;
     }

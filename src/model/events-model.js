@@ -1,6 +1,7 @@
 import Observable from '../framework/observable.js';
 import EventsConnector from './events-connector.js';
 import { UpdateType } from '../const.js';
+import { sortEventsDate } from '../utils/event.js';
 
 export default class EventsModel extends Observable {
   #eventsApiService = null;
@@ -150,5 +151,53 @@ export default class EventsModel extends Observable {
 
     return adaptedEvent;
   };
+
+  get generalTravelInformation () {
+    const sortableUserEvents = structuredClone(this.#eventsList).sort(sortEventsDate);
+    return {
+      totalPrice: this.#getTotalBasePriceWithOffers(sortableUserEvents),
+      journeyDates: this.#getJourneyDates(sortableUserEvents),
+      travelRoute: this.#getTravelRoute(sortableUserEvents),
+    };
+  }
+
+  #getTotalBasePriceWithOffers(sortableUserEvents) {
+    return sortableUserEvents.reduce((accumulator, currentItem) => {
+      let totalPrice = currentItem.basePrice;
+      currentItem.offers.forEach((offer) => {
+        if (offer.isActive) {
+          totalPrice += offer.price;
+        }
+      });
+      return accumulator + totalPrice;
+    }, 0);
+  }
+
+  #getJourneyDates(sortableUserEvents) {
+    if (!Array.isArray(sortableUserEvents) || sortableUserEvents.length === 0) {
+      return null;
+    }
+
+    return {
+      journeyStart: sortableUserEvents[0].dateFrom,
+      journeyEnd: sortableUserEvents[sortableUserEvents.length - 1].dateTo,
+    };
+  }
+
+  #getTravelRoute(sortableUserEvents) {
+    if (!Array.isArray(sortableUserEvents) || sortableUserEvents.length === 0) {
+      return null;
+    }
+
+    const destinations = sortableUserEvents.map((item) => item.destination.name);
+    if (destinations.length === 1) {
+      return destinations;
+    }
+    if (destinations.length <= 3) {
+      return destinations.join(' - ');
+    } else {
+      return `${destinations[0]} - ${destinations[destinations.length - 1]}`;
+    }
+  }
 
 }
