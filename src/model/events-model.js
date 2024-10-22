@@ -62,41 +62,47 @@ export default class EventsModel extends Observable {
 
     try {
       const response = await this.#eventsApiService.updateEvent(update);
-      const updatedTask = this.#adaptToClient(response);
+      const updatedEvent = this.#adaptToClient(response);
 
       this.#eventsList = [
         ...this.#eventsList.slice(0, index),
-        updatedTask,
+        updatedEvent,
         ...this.#eventsList.slice(index + 1),
       ];
-      this._notify(updateType, updatedTask);
+      this._notify(updateType, updatedEvent);
     } catch(err) {
-      throw new Error(`Can't update task ${err}`);
+      throw new Error(`Can't update event ${err}`);
     }
   }
 
-  addEvent(updateType, update) {
-    this.#eventsList = [
-      update,
-      ...this.#eventsList,
-    ];
-
-    this._notify(updateType, update);
+  async addEvent(updateType, update) {
+    try {
+      const response = await this.#eventsApiService.addEvent(update);
+      const newEvent = this.#adaptToClient(response);
+      this.#eventsList = [newEvent, ...this.#eventsList];
+      this._notify(updateType, newEvent);
+    } catch(err) {
+      throw new Error(`Can't add event ${err}`);
+    }
   }
 
-  deleteEvent(updateType, update) {
+  async deleteEvent(updateType, update) {
     const index = this.#eventsList.findIndex((event) => event.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t delete unexisting event');
     }
 
-    this.#eventsList = [
-      ...this.#eventsList.slice(0, index),
-      ...this.#eventsList.slice(index + 1),
-    ];
-
-    this._notify(updateType);
+    try {
+      await this.#eventsApiService.deleteEvent(update);
+      this.#eventsList = [
+        ...this.#eventsList.slice(0, index),
+        ...this.#eventsList.slice(index + 1),
+      ];
+      this._notify(updateType);
+    } catch(err) {
+      throw new Error('Can\'t delete event');
+    }
   }
 
   #adaptToClient = (event) => {
