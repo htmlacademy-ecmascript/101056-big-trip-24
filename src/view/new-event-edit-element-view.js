@@ -88,7 +88,8 @@ const createOpenEventButton = (isDefaultEvent) => {
 };
 
 const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaultEvent) => {
-  const {basePrice, type, offers, destination, dateFrom, dateTo} = eventData;
+  const {basePrice, type, offers, destination, dateFrom, dateTo, isDisabled, isSaving, isDeleting} = eventData;
+  const isSubmitDisabled = (!dateFrom || !dateTo || !destination.name || basePrice <= 0);
 
   return `<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -96,7 +97,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                   <div class="event__type-wrapper">
                     <label class="event__type  event__type-btn" for="event-type-toggle-1">
                       <span class="visually-hidden">Choose event type</span>
-                      <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+                      <img class="event__type-icon ${isDisabled ? 'visually-hidden' : ''}" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
                     </label>
                     <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -112,7 +113,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" value="${destination.name === undefined ? '' : he.encode(destination.name)}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" ${isDisabled ? 'disabled' : ''} value="${destination.name === undefined ? '' : he.encode(destination.name)}" list="destination-list-1">
                     <datalist id="destination-list-1">
                     ${createDestinations(destinationsList)}
                     </datalist>
@@ -120,10 +121,10 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom}">
+                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" ${isDisabled ? 'disabled' : ''} value="${dateFrom}">
                     &mdash;
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTo}">
+                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" ${isDisabled ? 'disabled' : ''} value="${dateTo}">
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -131,11 +132,11 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" ${isDisabled ? 'disabled' : ''} value="${basePrice}">
                   </div>
 
-                  <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
+                  <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
+                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
                   ${createOpenEventButton(isDefaultEvent)}
                 </header>
                 <section class="event__details">
@@ -208,7 +209,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
       .addEventListener('click', this.#deleteHandler);
 
     this.element.querySelector('#event-price-1')
-      .addEventListener('input', this.#eventPriceToggleHandler);
+      .addEventListener('change', this.#eventPriceToggleHandler);
     this.element.querySelector('.event__input--destination')
       .addEventListener('input', this.#eventDestinationToggleHandler);
 
@@ -283,16 +284,24 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   }
 
   static parseEventDataToState(eventData) {
-    return eventData;
+    return {...eventData,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    };
   }
 
   static parseStateToEventData(state) {
-    return state;
+    const eventData = {...state};
+    delete eventData.isDisabled;
+    delete eventData.isSaving;
+    delete eventData.isDeleting;
+    return eventData;
   }
 
   #eventPriceToggleHandler = (evt) => {
     evt.preventDefault();
-    this._setState({
+    this.updateElement({
       basePrice: evt.target.value,
     });
   };

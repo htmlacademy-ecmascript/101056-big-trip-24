@@ -45,6 +45,13 @@ export default class NewEventPresenter {
     document.addEventListener('keydown', this.#escKeyDownHandler);
   }
 
+  setSaving() {
+    this.#eventEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
   destroy() {
     if (this.#eventEditComponent === null) {
       return;
@@ -64,7 +71,6 @@ export default class NewEventPresenter {
       UpdateType.MINOR,
       event,
     );
-    this.destroy();
   };
 
   #handleDeleteClick = () => {

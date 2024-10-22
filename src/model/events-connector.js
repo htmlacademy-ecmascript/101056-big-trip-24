@@ -115,7 +115,6 @@ export default class EventsConnector {
   #generateDefaultEvent = (offersMap, defaultType) => {
     const defaultOffers = offersMap.get(defaultType) || null;
     const defaultEvent = {
-      id: '',
       basePrice: 0,
       dateFrom: '',
       dateTo: '',
