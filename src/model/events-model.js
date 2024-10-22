@@ -196,7 +196,7 @@ export default class EventsModel extends Observable {
     if (destinations.length <= 3) {
       return destinations.join(' - ');
     } else {
-      return `${destinations[0]} - ${destinations[destinations.length - 1]}`;
+      return `${destinations[0]} ... ${destinations[destinations.length - 1]}`;
     }
   }
 
