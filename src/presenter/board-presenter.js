@@ -4,17 +4,27 @@ import NewEventsListView from '../view/new-events-list-view.js';
 import EventPresenter from './event-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
 import NewEventPresenter from './new-event-presenter.js';
+import LoadingView from '../view/loading-view.js';
 import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
 import { sortEventsPrice, sortEventsTime, sortEventsDate } from '../utils/event.js';
 import { filter } from '../utils/filter.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import NewTripInfoView from '../view/new-trip-info-view.js';
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class BoardPresenter {
+  #mainContainer = null;
   #container = null;
   #eventsModel = null;
   #filterModel = null;
 
+  #loadingComponent = new LoadingView();
   #sortComponent = null;
+  #mainComponent = null;
   #noEventComponent = null;
   #eventsListComponent = new NewEventsListView();
 
@@ -22,32 +32,53 @@ export default class BoardPresenter {
   #newEventPresenter = null;
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
+  #isLoadingDataError = false;
+
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT,
+  });
+
   #findDestinationData = null;
   #destinationsData = null;
   #getOffersMapByType = null;
   #defaultEvent = null;
 
-  constructor ({container, filterModel, eventsModel, onNewEventDestroy}) {
+  constructor ({mainContainer, container, filterModel, eventsModel, onNewEventDestroy}) {
+    this.#mainContainer = mainContainer;
     this.#container = container;
     this.#eventsModel = eventsModel;
     this.#filterModel = filterModel;
     this.#findDestinationData = this.#eventsModel.findDestinationData;
-    this.#destinationsData = this.#eventsModel.destinationsData;
     this.#getOffersMapByType = this.#eventsModel.getOffersMapByType;
-    this.#defaultEvent = this.#eventsModel.defaultEvent;
 
     this.#newEventPresenter = new NewEventPresenter({
+      userEvent: this.#defaultEvent,
       eventListContainer: this.#eventsListComponent.element,
       onDataChange: this.#handleViewAction,
       onDestroy: onNewEventDestroy,
       findDestinationData: this.#findDestinationData,
       destinationsData: this.#destinationsData,
       getOffersMapByType: this.#getOffersMapByType,
-      userEvent: this.#defaultEvent,
     });
 
     this.#eventsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
+  }
+
+  #renderEvent(inputUserEvent) {
+    const destinationsData = this.#eventsModel.destinationsData;
+    const eventPresenter = new EventPresenter({
+      container: this.#eventsListComponent.element,
+      onDataChange: this.#handleViewAction,
+      onModeChange: this.#handleModeChange,
+      findDestinationData: this.#findDestinationData,
+      destinationsData: this.#destinationsData,
+      getOffersMapByType: this.#getOffersMapByType,
+    });
+    eventPresenter.init(inputUserEvent, destinationsData);
+    this.#eventPresenters.set(inputUserEvent.id, eventPresenter);
   }
 
   get eventsList () {
@@ -71,25 +102,16 @@ export default class BoardPresenter {
   createEvent() {
     this.#currentSortType = SortType.DEFAULT;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newEventPresenter.init();
-  }
-
-  #renderEvent(inputUserEvent) {
-    const eventPresenter = new EventPresenter({
-      container: this.#eventsListComponent.element,
-      onDataChange: this.#handleViewAction,
-      onModeChange: this.#handleModeChange,
-      findDestinationData: this.#findDestinationData,
-      destinationsData: this.#destinationsData,
-      getOffersMapByType: this.#getOffersMapByType,
-    });
-    eventPresenter.init(inputUserEvent);
-    this.#eventPresenters.set(inputUserEvent.id, eventPresenter);
+    const destinationsData = this.#eventsModel.destinationsData;
+    const defaultEvent = this.#eventsModel.defaultEvent;
+    this.#newEventPresenter.init(defaultEvent, destinationsData);
   }
 
   #renderNoEvents() {
+    this.#isLoadingDataError = this.#eventsModel.isLoadingDataError;
     this.#noEventComponent = new NoEventsView({
-      filterType: this.#filterType
+      filterType: this.#filterType,
+      isLoadingDataError: this.#isLoadingDataError,
     });
     render (this.#noEventComponent, this.#container);
   }
@@ -114,7 +136,24 @@ export default class BoardPresenter {
     render(this.#sortComponent, this.#container, 'AFTERBEGIN');
   }
 
+  #renderTripMain () {
+    const generalTravelInformation = this.#eventsModel.generalTravelInformation;
+    this.#mainComponent = new NewTripInfoView({
+      generalTravelInformation: generalTravelInformation,
+    });
+    render (this.#mainComponent, this.#mainContainer, 'AFTERBEGIN');
+  }
+
+  #clearTripMain () {
+    remove(this.#mainComponent);
+  }
+
   #renderBoard () {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (this.eventsList.length === 0) {
       this.#renderNoEvents();
       return;
@@ -139,6 +178,7 @@ export default class BoardPresenter {
     this.#eventPresenters.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     if (this.#noEventComponent) {
       remove(this.#noEventComponent);
     }
@@ -148,34 +188,69 @@ export default class BoardPresenter {
     }
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventsModel.updateEvent(updateType, update);
+        this.#eventPresenters.get(update.id).setSaving();
+        try {
+          await this.#eventsModel.updateEvent(updateType, update);
+        } catch(err) {
+          this.#eventPresenters.get(update.id).setAborting();
+        }
         break;
       case UserAction.ADD_EVENT:
-        this.#eventsModel.addEvent(updateType, update);
+        this.#newEventPresenter.setSaving();
+        try {
+          await this.#eventsModel.addEvent(updateType, update);
+        } catch(err) {
+          this.#newEventPresenter.setAborting();
+        }
         break;
       case UserAction.DELETE_EVENT:
-        this.#eventsModel.deleteEvent(updateType, update);
+        this.#eventPresenters.get(update.id).setDeleting();
+        try {
+          await this.#eventsModel.deleteEvent(updateType, update);
+        } catch(err) {
+          this.#eventPresenters.get(update.id).setAborting();
+        }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
         this.#eventPresenters.get(data.id).init(data);
+        this.#clearTripMain();
+        this.#renderTripMain();
         break;
       case UpdateType.MINOR:
+        this.#clearTripMain();
+        this.#renderTripMain();
         this.#clearBoard();
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
+        this.#clearTripMain();
+        this.#renderTripMain();
         this.#clearBoard({resetSortType: true});
+        this.#renderBoard();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderTripMain();
         this.#renderBoard();
         break;
     }
   };
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
 
 }

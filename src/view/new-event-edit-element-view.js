@@ -26,7 +26,7 @@ const createOffers = (offersMap) => {
 };
 
 const createOffersContainer = (offersMap) => {
-  if (!offersMap.size > 0) {
+  if (!offersMap || offersMap.size === 0) {
     return '';
   }
   return `<section class="event__section  event__section--offers">
@@ -68,14 +68,34 @@ const createDestinations = (destinationsList) => {
   return destinationsHTML;
 };
 
-const createDestinationDescription = (description) => {
+const createPhoto = (picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`;
+
+const createPhotos = (pictures) => {
+  let picturesHTML = '';
+  pictures.forEach((picture) => {
+    picturesHTML += createPhoto(picture);
+  });
+  return picturesHTML;
+};
+
+const createPhotoContainer = (pictures) => {
+  if (!pictures) {
+    return '';
+  }
+  return`<div class="event__photos-tape">
+                ${createPhotos(pictures)}
+                      </div>`;
+};
+
+const createDestinationDescription = (description, pictures) => {
   if (!description) {
     return '';
   }
   return `<section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                     <p class="event__destination-description">${description}</p>
-                  </section>`;
+                  </section>
+                  ${createPhotoContainer(pictures)}`;
 };
 
 const createOpenEventButton = (isDefaultEvent) => {
@@ -88,7 +108,21 @@ const createOpenEventButton = (isDefaultEvent) => {
 };
 
 const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaultEvent) => {
-  const {basePrice, type, offers, destination, dateFrom, dateTo} = eventData;
+  const {basePrice, type, offers, destination, dateFrom, dateTo, isDisabled, isSaving, isDeleting} = eventData;
+
+  const basePriceNumber = Number(basePrice);
+  const isBasePriceInteger = Number.isInteger(basePriceNumber);
+  const isSubmitDisabled = (
+    !dateFrom ||
+    !dateTo ||
+    !destination.name ||
+    !destination.id ||
+    !isBasePriceInteger ||
+    (basePriceNumber <= 0)
+  );
+
+  const buttonDeleteValue = isDefaultEvent ? 'Cancel' : 'Delete';
+  const buttonDeleteProgressValue = isDefaultEvent ? 'Canceling...' : 'Deleting...';
 
   return `<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -112,7 +146,7 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" value="${destination.name === undefined ? '' : he.encode(destination.name)}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="${destination.id === undefined ? '' : destination.id}" type="text" name="event-destination" ${isDisabled ? 'disabled' : ''} value="${destination.name === undefined ? '' : he.encode(destination.name)}" list="destination-list-1">
                     <datalist id="destination-list-1">
                     ${createDestinations(destinationsList)}
                     </datalist>
@@ -120,10 +154,10 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom}">
+                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" ${isDisabled ? 'disabled' : ''} value="${dateFrom}">
                     &mdash;
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTo}">
+                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" ${isDisabled ? 'disabled' : ''} value="${dateTo}">
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -131,16 +165,16 @@ const createNewEventEditElementTemplate = (eventData, destinationsList, isDefaul
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" ${isDisabled ? 'disabled' : ''} value="${basePrice}">
                   </div>
 
-                  <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
+                  <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
+                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? buttonDeleteProgressValue : buttonDeleteValue}</button>
                   ${createOpenEventButton(isDefaultEvent)}
                 </header>
                 <section class="event__details">
                     ${createOffersContainer(offers)}
-                    ${createDestinationDescription(destination.description)}
+                    ${createDestinationDescription(destination.description, destination.pictures)}
                 </section>
               </form>
             </li>`;
@@ -160,13 +194,13 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   #handleSubmit = null;
   #formElement = null;
 
-  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, destinationsData, getOffersMapByType, isDefaultEvent}) {
+  constructor ({userEvent, onClick, onSubmit, onDeleteClick, findDestinationData, getOffersMapByType, destinationsData, isDefaultEvent}) {
     super();
     this.#eventData = userEvent;
     this.#findDestinationData = findDestinationData;
     this.#destinationsData = destinationsData;
-    this.#getOffersMapByType = getOffersMapByType;
     this.#isDefaultEvent = isDefaultEvent;
+    this.#getOffersMapByType = getOffersMapByType;
     this._setState(NewEventEditElementView.parseEventDataToState(userEvent));
 
     this.#handleClick = onClick;
@@ -208,7 +242,7 @@ export default class NewEventEditElementView extends AbstractStatefulView {
       .addEventListener('click', this.#deleteHandler);
 
     this.element.querySelector('#event-price-1')
-      .addEventListener('input', this.#eventPriceToggleHandler);
+      .addEventListener('change', this.#eventPriceToggleHandler);
     this.element.querySelector('.event__input--destination')
       .addEventListener('input', this.#eventDestinationToggleHandler);
 
@@ -283,16 +317,24 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   }
 
   static parseEventDataToState(eventData) {
-    return eventData;
+    return {...eventData,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    };
   }
 
   static parseStateToEventData(state) {
-    return state;
+    const eventData = {...state};
+    delete eventData.isDisabled;
+    delete eventData.isSaving;
+    delete eventData.isDeleting;
+    return eventData;
   }
 
   #eventPriceToggleHandler = (evt) => {
     evt.preventDefault();
-    this._setState({
+    this.updateElement({
       basePrice: evt.target.value,
     });
   };

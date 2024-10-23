@@ -24,18 +24,17 @@ export default class EventPresenter {
   #eventItem = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({container, onDataChange, onModeChange, findDestinationData, destinationsData, getOffersMapByType}) {
+  constructor ({container, onDataChange, onModeChange, findDestinationData, getOffersMapByType}) {
     this.#container = container;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
     this.#findDestinationData = findDestinationData;
-    this.#destinationsData = destinationsData;
     this.#getOffersMapByType = getOffersMapByType;
   }
 
-  init (eventItem) {
+  init (eventItem, destinationsData) {
     this.#eventItem = eventItem;
-
+    this.#destinationsData = destinationsData;
     const prevEventComponent = this.#eventComponent;
     const prevEventEditComponent = this.#eventEditComponent;
 
@@ -52,7 +51,7 @@ export default class EventPresenter {
       findDestinationData: this.#findDestinationData,
       destinationsData: this.#destinationsData,
       getOffersMapByType: this.#getOffersMapByType,
-
+      isDefaultEvent: this.isDefaultEvent,
     });
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
@@ -64,10 +63,28 @@ export default class EventPresenter {
       replace (this.#eventComponent, prevEventComponent);
     }
     if (this.#mode === Mode.EDITING) {
-      replace (this.#eventEditComponent, prevEventEditComponent);
+      replace(this.#eventComponent, prevEventEditComponent);
+      this.#mode = Mode.DEFAULT;
     }
     remove(prevEventComponent);
     remove(prevEventEditComponent);
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#eventComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#eventEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#eventEditComponent.shake(resetFormState);
   }
 
   #replaceEventCardToEditForm() {
@@ -92,6 +109,24 @@ export default class EventPresenter {
     if (this.#mode !== Mode.DEFAULT) {
       this.#eventEditComponent.reset(this.#eventItem);
       this.#replaceEditFormToEventCard();
+    }
+  }
+
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#eventEditComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#eventEditComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
     }
   }
 
@@ -145,7 +180,6 @@ export default class EventPresenter {
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       update,
     );
-    this.#replaceEditFormToEventCard();
   };
 
 }

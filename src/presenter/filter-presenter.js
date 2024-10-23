@@ -21,6 +21,9 @@ export default class FilterPresenter {
 
   get filters() {
     const userEvents = this.#eventsModel.userEvents;
+    if (!userEvents) {
+      return [];
+    }
 
     return Object.values(FilterType).map((type) => ({
       type,
