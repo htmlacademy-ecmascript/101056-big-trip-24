@@ -306,13 +306,14 @@ export default class NewEventEditElementView extends AbstractStatefulView {
   };
 
   #updateDatePickerConstraints(index) {
-    const minDate = this._state.dateFrom;
-    const maxDate = this._state.dateTo;
+    const minDate = new Date(this._state.dateFrom);
+    const maxDate = new Date(this._state.dateTo);
+
 
     if (index) {
-      this.datepickers[index].set('minDate', minDate);
+      this.datepickers[index].set('minDate', minDate ? new Date(minDate.getTime() + 10 * 60 * 1000) : null);
     } else {
-      this.datepickers[index].set('maxDate', maxDate);
+      this.datepickers[index].set('maxDate', maxDate ? new Date(maxDate.getTime() - 10 * 60 * 1000) : null);
     }
   }
 

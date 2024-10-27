@@ -133,6 +133,7 @@ export default class EventPresenter {
   #escKeyDownHandler = (evt) => {
     if (isEscapeKey(evt)) {
       evt.preventDefault();
+      this.#eventEditComponent.reset(this.#eventItem);
       this.#replaceEditFormToEventCard();
     }
   };
